@@ -87,6 +87,7 @@ function seed() {
   if (!fs.existsSync(fileFor('settings'))) writeObj('settings', {});
   if (!fs.existsSync(fileFor('seo'))) writeObj('seo', {});
   if (!fs.existsSync(fileFor('image-overrides'))) writeObj('image-overrides', {});
+  if (!fs.existsSync(fileFor('image-extras'))) writeObj('image-extras', {});
 }
 seed();
 
@@ -117,6 +118,9 @@ app.post('/api/quote', (req, res) => {
 /* public read-only for site content (no auth) */
 app.get('/api/content/image-overrides', (req, res) => {
   res.json({ success: true, data: readObj('image-overrides') });
+});
+app.get('/api/content/image-extras', (req, res) => {
+  res.json({ success: true, data: readObj('image-extras') });
 });
 app.get('/api/content/:collection', (req, res) => {
   const allowed = ['services', 'projects', 'testimonials', 'settings', 'seo'];
@@ -339,6 +343,17 @@ app.delete('/api/admin/image-overrides/:key', requireAdmin, (req, res) => {
   writeObj('image-overrides', overrides);
   logActivity('image_override_removed', { ref: key });
   res.json({ success: true });
+});
+
+/* ---------- image extras — admin adds NEW images to a section ---------- */
+app.get('/api/admin/image-extras', requireAdmin, (req, res) => {
+  res.json({ success: true, data: readObj('image-extras') });
+});
+app.put('/api/admin/image-extras', requireAdmin, (req, res) => {
+  const next = { ...(req.body || {}) };
+  writeObj('image-extras', next);
+  logActivity('image_extras_updated');
+  res.json({ success: true, data: next });
 });
 
 const PORT = process.env.PORT || 5000;

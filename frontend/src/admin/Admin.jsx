@@ -871,16 +871,26 @@ function Testimonials() {
 function WebsiteImages() {
   const api = useApi();
   const toast = useToast();
+  const confirm = useConfirm();
   const [selectedPage, setSelectedPage] = useState(null);
   const [selectedSection, setSelectedSection] = useState(null);
   const [overrides, setOverrides] = useState({});
+  const [extras, setExtras] = useState({});
   const [preview, setPreview] = useState(null);
   const [replaceTarget, setReplaceTarget] = useState(null);
   const [replaceUrl, setReplaceUrl] = useState('');
   const [search, setSearch] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState({ src: '', label: '', text: '' });
+  const uploadRef = useRef(null);
+  const addUploadRef = useRef(null);
+  const API = (window.__ADM_API__ || '').replace(/\/api$/, '');
+  const token = localStorage.getItem('admin_token');
 
   useEffect(() => {
     api('/admin/image-overrides').then((d) => { if (d.success) setOverrides(d.data || {}); });
+    api('/admin/image-extras').then((d) => { if (d.success) setExtras(d.data || {}); });
   }, []);
 
   const saveOverride = async (key, url) => {
@@ -892,6 +902,42 @@ function WebsiteImages() {
     const next = { ...overrides }; delete next[key];
     await api('/admin/image-overrides', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
     setOverrides(next); toast('Reverted to original', 'success');
+  };
+
+  const uploadFile = async (file) => {
+    if (!file) return null;
+    setUploading(true);
+    const fd = new FormData(); fd.append('image', file);
+    try {
+      const res = await fetch(`${window.__ADM_API__}/admin/images`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+      const data = await res.json();
+      if (data.success) return `${API}${data.image.url}`;
+      toast('Upload failed', 'error');
+    } catch { toast('Upload failed', 'error'); }
+    setUploading(false);
+    return null;
+  };
+
+  const sectionKey = (page, section) => `${page.page}|${section.id}`;
+  const sectionExtras = selectedPage && selectedSection ? (extras[sectionKey(selectedPage, selectedSection)]?.items || []) : [];
+
+  const addExtra = async () => {
+    if (!addForm.src.trim()) return;
+    const key = sectionKey(selectedPage, selectedSection);
+    const anchor = selectedSection.images.find((i) => i.src)?.src || '';
+    const cur = extras[key] || { anchor, items: [] };
+    const next = { ...extras, [key]: { anchor, items: [...cur.items, { src: addForm.src.trim(), label: addForm.label.trim(), text: addForm.text.trim() }] } };
+    await api('/admin/image-extras', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
+    setExtras(next); setAddOpen(false); setAddForm({ src: '', label: '', text: '' });
+    toast('Image added — live on website', 'success');
+  };
+  const removeExtra = async (idx) => {
+    if (!await confirm({ title: 'Remove added image', message: 'This removes the extra image from the website section.', danger: true, confirmText: 'Remove' })) return;
+    const key = sectionKey(selectedPage, selectedSection);
+    const cur = extras[key];
+    const next = { ...extras, [key]: { ...cur, items: cur.items.filter((_, i) => i !== idx) } };
+    await api('/admin/image-extras', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
+    setExtras(next); toast('Extra image removed', 'success');
   };
 
   // Filter pages by search
@@ -990,9 +1036,13 @@ function WebsiteImages() {
       {/* LEVEL 3: Images within a section */}
       {selectedPage && selectedSection && (
         <div className="adm-panel">
-          <div className="adm-panel-head"><h3>{selectedSection.name}</h3><span className="adm-muted">{selectedPage.page} · {selectedSection.type}</span></div>
+          <div className="adm-panel-head">
+            <h3>{selectedSection.name}</h3>
+            <span className="adm-muted">{selectedPage.page} · {selectedSection.type}</span>
+            <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => { setAddForm({ src: '', label: '', text: '' }); setAddOpen(true); }}>+ Add Image</button>
+          </div>
           <div className="adm-panel-body">
-            {selectedSection.images.filter((i) => i.src).length === 0 ? (
+            {selectedSection.images.filter((i) => i.src).length === 0 && sectionExtras.length === 0 ? (
               <Empty icon="▦" title="No static images" sub="This section uses dynamic images from the backend." />
             ) : (
               <div className="adm-media-grid">
@@ -1017,6 +1067,22 @@ function WebsiteImages() {
                     </div>
                   );
                 })}
+                {/* Extra images added by admin */}
+                {sectionExtras.map((item, i) => (
+                  <div key={`ex-${i}`} className="adm-media-card">
+                    <div className="adm-media-img" style={{ cursor: 'pointer' }} onClick={() => setPreview({ src: item.src, displaySrc: item.src, label: item.label || 'Added image', position: '-', source: 'admin', refType: 'img', isOverridden: false, page: selectedPage.page, section: selectedSection.name })}>
+                      <img src={item.src} alt={item.label} loading="lazy" onError={(e) => { e.target.style.opacity = .3; }} />
+                      <span style={{ position: 'absolute', top: 6, right: 6, fontSize: '.62rem', fontWeight: 600, padding: '.15rem .4rem', borderRadius: 4, background: 'var(--ok)', color: '#fff' }}>Added</span>
+                    </div>
+                    <div className="adm-media-info">
+                      <div className="adm-media-name">{item.label || 'Added image'}</div>
+                      <div className="adm-media-meta">Extra · admin</div>
+                    </div>
+                    <div className="adm-media-actions">
+                      <button className="danger" onClick={() => removeExtra(i)}>Remove</button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -1084,11 +1150,52 @@ function WebsiteImages() {
                 </div>
               </div>
             </div>
-            <Field label="Replacement Image URL" hint="Paste a URL from Media Library (Copy URL button) or any public image URL. The website will immediately show this new image in place of the original.">
-              <Input value={replaceUrl} onChange={(e) => setReplaceUrl(e.target.value)} placeholder="https://… or /uploads/…" />
+            <Field label="Replacement Image URL" hint="Upload a new image from your computer, or paste a URL from Media Library (Copy URL button) or any public image URL.">
+              <div style={{ display: 'flex', gap: '.5rem' }}>
+                <Input value={replaceUrl} onChange={(e) => setReplaceUrl(e.target.value)} placeholder="https://… or /uploads/…" style={{ flex: 1 }} />
+                <button type="button" className="adm-btn" onClick={() => uploadRef.current?.click()} disabled={uploading}>
+                  {uploading ? 'Uploading…' : 'Upload'}
+                </button>
+              </div>
             </Field>
+            <input ref={uploadRef} type="file" accept="image/*" hidden onChange={async (e) => { const u = await uploadFile(e.target.files[0]); if (u) { setReplaceUrl(u); toast('Uploaded', 'success'); } e.target.value = ''; }} />
             <div style={{ padding: '.5rem .75rem', background: 'var(--warn-soft)', borderRadius: 7, fontSize: '.82rem', color: 'var(--warn)' }}>
               ⚠ The original file is not modified. You can revert anytime.
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Add Image modal — appends a new card to the section on the live site */}
+      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Image to Section"
+        footer={addOpen && (
+          <>
+            <button className="adm-btn" onClick={() => setAddOpen(false)}>Cancel</button>
+            <button className="adm-btn adm-btn-primary" onClick={addExtra} disabled={!addForm.src.trim()}>Add to Website</button>
+          </>
+        )}>
+        {addOpen && (
+          <div>
+            <div style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: '4/3', background: 'var(--surface-2)', marginBottom: '1rem', maxWidth: 320 }}>
+              {addForm.src ? <img src={addForm.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.opacity = .3; }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>No image</div>}
+            </div>
+            <Field label="Image" required hint="Upload from your computer or paste an image URL.">
+              <div style={{ display: 'flex', gap: '.5rem' }}>
+                <Input value={addForm.src} onChange={(e) => setAddForm({ ...addForm, src: e.target.value })} placeholder="https://… or /uploads/…" style={{ flex: 1 }} />
+                <button type="button" className="adm-btn" onClick={() => addUploadRef.current?.click()} disabled={uploading}>
+                  {uploading ? 'Uploading…' : 'Upload'}
+                </button>
+              </div>
+            </Field>
+            <input ref={addUploadRef} type="file" accept="image/*" hidden onChange={async (e) => { const u = await uploadFile(e.target.files[0]); if (u) { setAddForm((f) => ({ ...f, src: u })); toast('Uploaded', 'success'); } e.target.value = ''; }} />
+            <Field label="Title" hint="Optional — replaces the card heading on the website.">
+              <Input value={addForm.label} onChange={(e) => setAddForm({ ...addForm, label: e.target.value })} placeholder="e.g. Fireplace Tile" />
+            </Field>
+            <Field label="Description" hint="Optional — replaces the card text on the website.">
+              <Textarea rows={2} value={addForm.text} onChange={(e) => setAddForm({ ...addForm, text: e.target.value })} placeholder="Short description shown under the title" />
+            </Field>
+            <div style={{ padding: '.5rem .75rem', background: 'var(--accent-soft)', borderRadius: 7, fontSize: '.82rem', color: 'var(--accent)' }}>
+              ✓ The new image card appears at the end of this section on the live website.
             </div>
           </div>
         )}
