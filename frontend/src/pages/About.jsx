@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
+import { useSiteImages, imageUrl } from '../hooks/useContent.js';
 import AboutTestimonials from '../components/AboutTestimonials.jsx';
 import './About.css';
 
 export default function About() {
+  const si = useSiteImages();
   useEffect(() => {
     const reveals = document.querySelectorAll('.abt-reveal');
     const io = new IntersectionObserver((entries) => {
@@ -15,10 +17,10 @@ export default function About() {
     }, { threshold: 0.1 });
     reveals.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, []);
+  }, [si.data]);
 
   const html = `
-    <section class="abt-hero">
+    <section class="abt-hero" style="background-image:url('${imageUrl(si.get('abt-hero', 0, '/images/IMG_0455.jpg'))}');">
       <div class="abt-hero-inner abt-reveal">
         <p class="eyebrow">About</p>
         <h1>About Us</h1>
@@ -29,7 +31,7 @@ export default function About() {
     <section class="abt-who">
       <div class="container abt-who-grid">
         <div class="abt-reveal">
-          <img src="/images/IMG_9687.jpg" alt="Refined residential interior" loading="lazy" decoding="async">
+          <img src="${imageUrl(si.get('abt-who', 0, '/images/IMG_9687.jpg'))}" alt="Refined residential interior" loading="lazy" decoding="async">
         </div>
         <div class="abt-reveal">
           <h2>Craftsmanship with purpose.</h2>
@@ -49,7 +51,7 @@ export default function About() {
           <p>For Gurdeep, quality is not a promise; it is the result of paying attention to the details that most people do not notice.</p>
         </div>
         <div class="abt-reveal">
-          <img src="/images/IMG_9545.jpg" alt="Tile and craft detail" loading="lazy" decoding="async">
+          <img src="${imageUrl(si.get('abt-founder', 0, '/images/IMG_9545.jpg'))}" alt="Tile and craft detail" loading="lazy" decoding="async">
         </div>
       </div>
     </section>
@@ -89,7 +91,7 @@ export default function About() {
         </div>
         <div class="abt-areas-grid">
           <a href="/residential" class="abt-area abt-reveal">
-            <img src="/images/IMG_0447.jpg" alt="Residential project" loading="lazy" decoding="async">
+            <img src="${imageUrl(si.get('abt-areas', 0, '/images/IMG_0447.jpg'))}" alt="Residential project" loading="lazy" decoding="async">
             <div class="abt-area-content">
               <h3>Residential</h3>
               <p>Creating comfortable, functional, and beautifully finished spaces for homeowners.</p>
@@ -97,7 +99,7 @@ export default function About() {
             </div>
           </a>
           <a href="/" class="abt-area abt-reveal">
-            <img src="/images/IMG_9415.jpg" alt="Commercial project" loading="lazy" decoding="async">
+            <img src="${imageUrl(si.get('abt-areas', 1, '/images/IMG_9415.jpg'))}" alt="Commercial project" loading="lazy" decoding="async">
             <div class="abt-area-content">
               <h3>Commercial</h3>
               <p>Providing professional installation and improvement solutions for commercial spaces.</p>

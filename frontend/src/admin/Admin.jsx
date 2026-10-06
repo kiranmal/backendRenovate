@@ -3,7 +3,7 @@ import API from '../config.js';
 import './admin.css';
 import { ToastProvider, ConfirmProvider, useToast, useConfirm, Modal, Badge, Field, Input, Textarea, Select, Skeleton, TableSkeleton, Empty, Pagination, ImagePicker, useApi, timeAgo, fmtSize } from './ui.jsx';
 import { IMAGE_USAGE, EXTERNAL_IMAGES, getUsage, isUsed } from './imageUsage.js';
-import { WEBSITE_IMAGE_MAP, getAllMappedImages, findUsages } from './websiteImageMap.js';
+import { WEBSITE_IMAGE_MAP } from './websiteImageMap.js';
 import { FRONTEND_SERVICES, FRONTEND_PROJECTS, FRONTEND_GALLERY, FRONTEND_TESTIMONIALS, mergeServices, mergeProjects, mergeTestimonials, getAllGalleryImages, getGalleryByCategory, getGalleryByPage } from './frontendData.js';
 import { SERVICES as SERVICE_PAGES } from '../data/servicesData.js';
 
@@ -876,34 +876,23 @@ function WebsiteImages() {
   const confirm = useConfirm();
   const [selectedPage, setSelectedPage] = useState(null);
   const [selectedSection, setSelectedSection] = useState(null);
-  const [overrides, setOverrides] = useState({});
-  const [extras, setExtras] = useState({});
-  const [preview, setPreview] = useState(null);
-  const [replaceTarget, setReplaceTarget] = useState(null);
-  const [replaceUrl, setReplaceUrl] = useState('');
+  const [siteImgs, setSiteImgs] = useState(null);
+  const [sel, setSel] = useState(new Set());
   const [search, setSearch] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [addOpen, setAddOpen] = useState(false);
-  const [addForm, setAddForm] = useState({ src: '', label: '', text: '' });
+  const [editTarget, setEditTarget] = useState(null); // index or 'new'
+  const [editForm, setEditForm] = useState({ src: '', label: '', text: '', href: '', cta: '' });
   const uploadRef = useRef(null);
-  const addUploadRef = useRef(null);
   const API = (window.__ADM_API__ || '').replace(/\/api$/, '');
   const token = localStorage.getItem('admin_token');
 
   useEffect(() => {
-    api('/admin/image-overrides').then((d) => { if (d.success) setOverrides(d.data || {}); });
-    api('/admin/image-extras').then((d) => { if (d.success) setExtras(d.data || {}); });
+    api('/admin/site-images').then((d) => { if (d.success) setSiteImgs(d.data || {}); });
   }, []);
 
-  const saveOverride = async (key, url) => {
-    const next = { ...overrides, [key]: url };
-    await api('/admin/image-overrides', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
-    setOverrides(next); toast('Image replaced — live on website', 'success');
-  };
-  const removeOverride = async (key) => {
-    const next = { ...overrides }; delete next[key];
-    await api('/admin/image-overrides', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
-    setOverrides(next); toast('Reverted to original', 'success');
+  const persist = async (next) => {
+    await api('/admin/site-images', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
+    setSiteImgs(next);
   };
 
   const uploadFile = async (file) => {
@@ -920,45 +909,59 @@ function WebsiteImages() {
     return null;
   };
 
-  const sectionKey = (page, section) => `${page.page}|${section.id}`;
-  const sectionExtras = selectedPage && selectedSection ? (extras[sectionKey(selectedPage, selectedSection)]?.items || []) : [];
-
-  const addExtra = async () => {
-    if (!addForm.src.trim()) return;
-    const key = sectionKey(selectedPage, selectedSection);
-    const anchor = selectedSection.images.find((i) => i.src)?.src || '';
-    const cur = extras[key] || { anchor, items: [] };
-    const next = { ...extras, [key]: { anchor, items: [...cur.items, { src: addForm.src.trim(), label: addForm.label.trim(), text: addForm.text.trim() }] } };
-    await api('/admin/image-extras', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
-    setExtras(next); setAddOpen(false); setAddForm({ src: '', label: '', text: '' });
-    toast('Image added — live on website', 'success');
+  // Images for a section: DB list wins, static map is the fallback
+  const imagesOf = (section) => {
+    const db = siteImgs?.[section.id];
+    if (Array.isArray(db)) return db;
+    return section.images.filter((i) => i.src).map((i) => ({ src: i.src, label: i.label }));
   };
-  const removeExtra = async (idx) => {
-    if (!await confirm({ title: 'Remove added image', message: 'This removes the extra image from the website section.', danger: true, confirmText: 'Remove' })) return;
-    const key = sectionKey(selectedPage, selectedSection);
-    const cur = extras[key];
-    const next = { ...extras, [key]: { ...cur, items: cur.items.filter((_, i) => i !== idx) } };
-    await api('/admin/image-extras', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
-    setExtras(next); toast('Extra image removed', 'success');
+  const images = selectedSection ? imagesOf(selectedSection) : [];
+
+  const toggleSel = (idx) => setSel((s) => { const n = new Set(s); n.has(idx) ? n.delete(idx) : n.add(idx); return n; });
+
+  const deleteImages = async (idxs) => {
+    if (!idxs.length || !selectedSection) return;
+    if (!await confirm({ title: 'Delete images', message: `Permanently delete ${idxs.length} image${idxs.length > 1 ? 's' : ''} from this section on the website?`, danger: true, confirmText: `Delete ${idxs.length}` })) return;
+    const next = { ...(siteImgs || {}), [selectedSection.id]: images.filter((_, i) => !idxs.includes(i)) };
+    await persist(next);
+    setSel(new Set());
+    toast(`${idxs.length} image${idxs.length > 1 ? 's' : ''} deleted`, 'success');
+  };
+
+  const openEdit = (idx) => {
+    if (idx === 'new') setEditForm({ src: '', label: '', text: '', href: '', cta: '' });
+    else {
+      const it = images[idx] || {};
+      setEditForm({ src: it.src || '', label: it.label || '', text: it.text || '', href: it.href || '', cta: it.cta || '' });
+    }
+    setEditTarget(idx);
+  };
+
+  const saveEdit = async () => {
+    if (!editForm.src.trim() || !selectedSection) return;
+    const list = [...images];
+    const entry = { src: editForm.src.trim(), label: editForm.label.trim(), text: editForm.text.trim(), href: editForm.href.trim(), cta: editForm.cta.trim() };
+    if (editTarget === 'new') list.push(entry); else list[editTarget] = entry;
+    await persist({ ...(siteImgs || {}), [selectedSection.id]: list });
+    setEditTarget(null);
+    toast(editTarget === 'new' ? 'Image added — live on website' : 'Image updated — live on website', 'success');
   };
 
   // Filter pages by search
   const filteredPages = WEBSITE_IMAGE_MAP.filter((p) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
-    return p.page.toLowerCase().includes(q) || p.sections.some((s) => s.name.toLowerCase().includes(q) || s.images.some((i) => (i.src || '').toLowerCase().includes(q) || (i.label || '').toLowerCase().includes(q)));
+    return p.page.toLowerCase().includes(q) || p.sections.some((s) => s.name.toLowerCase().includes(q) || imagesOf(s).some((i) => (i.src || '').toLowerCase().includes(q) || (i.label || '').toLowerCase().includes(q)));
   });
 
-  const totalImages = getAllMappedImages().length;
-  const overriddenCount = Object.keys(overrides).length;
+  const totalImages = WEBSITE_IMAGE_MAP.reduce((n, p) => n + p.sections.reduce((m, s) => m + imagesOf(s).length, 0), 0);
 
   return (
     <>
       <div className="adm-page-head">
-        <div><h1>Website Images</h1><p>See exactly where every image is used on your website</p></div>
+        <div><h1>Website Images</h1><p>Every image on the website — edit, delete or add (stored in DB)</p></div>
         <div className="adm-page-actions">
-          <span className="adm-chip">{totalImages} images mapped</span>
-          <span className="adm-chip">{overriddenCount} replaced</span>
+          <span className="adm-chip">{totalImages} images in DB</span>
         </div>
       </div>
 
@@ -968,24 +971,26 @@ function WebsiteImages() {
           <input placeholder="Search pages, sections, images…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         {(selectedPage || selectedSection) && (
-          <button className="adm-btn adm-btn-sm" onClick={() => { setSelectedPage(null); setSelectedSection(null); }}>← All pages</button>
+          <button className="adm-btn adm-btn-sm" onClick={() => { setSelectedPage(null); setSelectedSection(null); setSel(new Set()); }}>← All pages</button>
         )}
       </div>
 
       {/* Breadcrumb */}
       {(selectedPage || selectedSection) && (
         <div style={{ marginBottom: '1rem', fontSize: '.85rem', color: 'var(--muted)' }}>
-          <button className="adm-link" onClick={() => { setSelectedPage(null); setSelectedSection(null); }}>Website Images</button>
-          {selectedPage && <> › <button className="adm-link" onClick={() => setSelectedSection(null)}>{selectedPage.page}</button></>}
+          <button className="adm-link" onClick={() => { setSelectedPage(null); setSelectedSection(null); setSel(new Set()); }}>Website Images</button>
+          {selectedPage && <> › <button className="adm-link" onClick={() => { setSelectedSection(null); setSel(new Set()); }}>{selectedPage.page}</button></>}
           {selectedSection && <> › <b style={{ color: 'var(--text)' }}>{selectedSection.name}</b></>}
         </div>
       )}
 
+      {siteImgs === null && <Empty icon="…" title="Loading images" sub="Fetching website images from the database." />}
+
       {/* LEVEL 1: Page list */}
-      {!selectedPage && (
+      {siteImgs && !selectedPage && (
         <div className="adm-grid-2">
           {filteredPages.map((page) => {
-            const imgCount = page.sections.reduce((n, s) => n + s.images.filter((i) => i.src).length, 0);
+            const imgCount = page.sections.reduce((n, s) => n + imagesOf(s).length, 0);
             return (
               <div key={page.page} className="adm-panel" style={{ cursor: 'pointer' }} onClick={() => { setSelectedPage(page); setSelectedSection(null); }}>
                 <div className="adm-panel-body" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -1003,10 +1008,10 @@ function WebsiteImages() {
       )}
 
       {/* LEVEL 2: Section list within a page */}
-      {selectedPage && !selectedSection && (
+      {siteImgs && selectedPage && !selectedSection && (
         <div className="adm-grid-2">
           {selectedPage.sections.map((section) => {
-            const imgs = section.images.filter((i) => i.src);
+            const imgs = imagesOf(section);
             return (
               <div key={section.id} className="adm-panel" style={{ cursor: 'pointer' }} onClick={() => setSelectedSection(section)}>
                 <div className="adm-panel-body">
@@ -1018,15 +1023,14 @@ function WebsiteImages() {
                   {imgs.length > 0 ? (
                     <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
                       {imgs.slice(0, 5).map((img, i) => (
-                        <div key={i} style={{ width: 56, height: 56, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border)', position: 'relative' }}>
-                          <img src={overrides[img.src] || img.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
-                          {overrides[img.src] && <span style={{ position: 'absolute', bottom: 2, right: 2, fontSize: '.5rem', background: 'var(--accent)', color: '#fff', padding: '1px 3px', borderRadius: 3 }}>R</span>}
+                        <div key={i} style={{ width: 56, height: 56, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                          <img src={img.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
                         </div>
                       ))}
                       {imgs.length > 5 && <div style={{ width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', fontSize: '.8rem' }}>+{imgs.length - 5}</div>}
                     </div>
                   ) : (
-                    <div className="adm-muted" style={{ fontSize: '.82rem' }}>Dynamic from backend (no static images)</div>
+                    <div className="adm-muted" style={{ fontSize: '.82rem' }}>No images — dynamic from backend or empty</div>
                   )}
                 </div>
               </div>
@@ -1036,52 +1040,45 @@ function WebsiteImages() {
       )}
 
       {/* LEVEL 3: Images within a section */}
-      {selectedPage && selectedSection && (
+      {siteImgs && selectedPage && selectedSection && (
         <div className="adm-panel">
           <div className="adm-panel-head">
             <h3>{selectedSection.name}</h3>
-            <span className="adm-muted">{selectedPage.page} · {selectedSection.type}</span>
-            <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => { setAddForm({ src: '', label: '', text: '' }); setAddOpen(true); }}>+ Add Image</button>
+            <span className="adm-muted">{selectedPage.page} · {selectedSection.type} · {images.length} image{images.length !== 1 ? 's' : ''}{sel.size > 0 ? ` · ${sel.size} selected` : ''}</span>
+            {images.length > 0 && (
+              <button className="adm-btn adm-btn-sm" onClick={() => setSel(sel.size === images.length ? new Set() : new Set(images.map((_, i) => i)))}>
+                {sel.size === images.length ? 'Deselect all' : 'Select all'}
+              </button>
+            )}
+            <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => openEdit('new')}>+ Add Image</button>
           </div>
           <div className="adm-panel-body">
-            {selectedSection.images.filter((i) => i.src).length === 0 && sectionExtras.length === 0 ? (
-              <Empty icon="▦" title="No static images" sub="This section uses dynamic images from the backend." />
+            {sel.size > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', padding: '.6rem .9rem', marginBottom: '1rem', background: 'var(--accent-soft)', border: '1px solid var(--accent)', borderRadius: 'var(--radius-sm)' }}>
+                <span style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--accent)', flex: 1 }}>{sel.size} image{sel.size > 1 ? 's' : ''} selected</span>
+                <button className="adm-btn adm-btn-sm adm-btn-danger" onClick={() => deleteImages([...sel])}>Delete selected</button>
+                <button className="adm-btn adm-btn-sm adm-btn-ghost" onClick={() => setSel(new Set())}>Clear</button>
+              </div>
+            )}
+            {images.length === 0 ? (
+              <Empty icon="▦" title="No images" sub="Add images to show them in this section on the website." />
             ) : (
               <div className="adm-media-grid">
-                {selectedSection.images.filter((i) => i.src).map((img, i) => {
-                  const displaySrc = overrides[img.src] || img.src;
-                  const isOverridden = !!overrides[img.src];
-                  return (
-                    <div key={i} className="adm-media-card">
-                      <div className="adm-media-img" style={{ cursor: 'pointer' }} onClick={() => setPreview({ ...img, displaySrc, isOverridden, page: selectedPage.page, section: selectedSection.name })}>
-                        <img src={displaySrc} alt={img.label} loading="lazy" onError={(e) => { e.target.style.opacity = .3; }} />
-                        {isOverridden && <span style={{ position: 'absolute', top: 6, right: 6, fontSize: '.62rem', fontWeight: 600, padding: '.15rem .4rem', borderRadius: 4, background: 'var(--accent)', color: '#fff' }}>Replaced</span>}
-                      </div>
-                      <div className="adm-media-info">
-                        <div className="adm-media-name">{img.label}</div>
-                        <div className="adm-media-meta">Position {img.position} · {img.source}</div>
-                      </div>
-                      <div className="adm-media-actions">
-                        <button onClick={() => setPreview({ ...img, displaySrc, isOverridden, page: selectedPage.page, section: selectedSection.name })}>Details</button>
-                        <button onClick={() => { setReplaceTarget(img); setReplaceUrl(overrides[img.src] || ''); }}>Replace</button>
-                        {isOverridden && <button className="danger" onClick={() => removeOverride(img.src)}>Revert</button>}
-                      </div>
-                    </div>
-                  );
-                })}
-                {/* Extra images added by admin */}
-                {sectionExtras.map((item, i) => (
-                  <div key={`ex-${i}`} className="adm-media-card">
-                    <div className="adm-media-img" style={{ cursor: 'pointer' }} onClick={() => setPreview({ src: item.src, displaySrc: item.src, label: item.label || 'Added image', position: '-', source: 'admin', refType: 'img', isOverridden: false, page: selectedPage.page, section: selectedSection.name })}>
-                      <img src={item.src} alt={item.label} loading="lazy" onError={(e) => { e.target.style.opacity = .3; }} />
-                      <span style={{ position: 'absolute', top: 6, right: 6, fontSize: '.62rem', fontWeight: 600, padding: '.15rem .4rem', borderRadius: 4, background: 'var(--ok)', color: '#fff' }}>Added</span>
+                {images.map((img, i) => (
+                  <div key={i} className={`adm-media-card${sel.has(i) ? ' selected' : ''}`}>
+                    <div className="adm-media-img" style={{ cursor: 'pointer' }} onClick={() => toggleSel(i)}>
+                      <img src={img.src} alt={img.label} loading="lazy" onError={(e) => { e.target.style.opacity = .3; }} />
+                      <label className="adm-media-check" onClick={(e) => e.stopPropagation()}>
+                        <input type="checkbox" checked={sel.has(i)} onChange={() => toggleSel(i)} />
+                      </label>
                     </div>
                     <div className="adm-media-info">
-                      <div className="adm-media-name">{item.label || 'Added image'}</div>
-                      <div className="adm-media-meta">Extra · admin</div>
+                      <div className="adm-media-name">{img.label || 'Image'}</div>
+                      <div className="adm-media-meta" style={{ wordBreak: 'break-all' }}>{img.src.replace(API, '').split('/').pop()}</div>
                     </div>
                     <div className="adm-media-actions">
-                      <button className="danger" onClick={() => removeExtra(i)}>Remove</button>
+                      <button onClick={() => openEdit(i)}>Edit</button>
+                      <button className="danger" onClick={() => deleteImages([i])}>Delete</button>
                     </div>
                   </div>
                 ))}
@@ -1091,113 +1088,41 @@ function WebsiteImages() {
         </div>
       )}
 
-      {/* Preview modal */}
-      <Modal open={!!preview} onClose={() => setPreview(null)} title={preview?.label || 'Image'} size="lg"
-        footer={preview && (
+      {/* Edit / Add modal */}
+      <Modal open={editTarget !== null} onClose={() => setEditTarget(null)} title={editTarget === 'new' ? 'Add Image to Section' : 'Edit Image'}
+        footer={editTarget !== null && (
           <>
-            <button className="adm-btn" onClick={() => { navigator.clipboard.writeText(preview.displaySrc); toast('URL copied', 'success'); }}>Copy URL</button>
-            <a className="adm-btn" href={preview.displaySrc} target="_blank" rel="noreferrer">Open Original</a>
-            <button className="adm-btn" onClick={() => setPreview(null)}>Close</button>
+            <button className="adm-btn" onClick={() => setEditTarget(null)}>Cancel</button>
+            <button className="adm-btn adm-btn-primary" onClick={saveEdit} disabled={!editForm.src.trim()}>{editTarget === 'new' ? 'Add to Website' : 'Save Changes'}</button>
           </>
         )}>
-        {preview && (
+        {editTarget !== null && (
           <div>
-            <div style={{ borderRadius: 8, overflow: 'hidden', marginBottom: '1.25rem', background: 'var(--surface-2)' }}>
-              <img src={preview.displaySrc} alt={preview.label} style={{ width: '100%', maxHeight: 400, objectFit: 'contain', display: 'block' }} />
+            <div style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: '4/3', background: 'var(--surface-2)', marginBottom: '1rem', maxWidth: 320 }}>
+              {editForm.src ? <img src={editForm.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.opacity = .3; }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>No image</div>}
             </div>
-            <div className="adm-field-row">
-              <Field label="Page"><Input value={preview.page} readOnly /></Field>
-              <Field label="Section"><Input value={preview.section} readOnly /></Field>
-            </div>
-            <div className="adm-field-row">
-              <Field label="Position"><Input value={`Image ${preview.position}`} readOnly /></Field>
-              <Field label="Source"><Input value={preview.source} readOnly /></Field>
-            </div>
-            <Field label="Original Path"><Input value={preview.src} readOnly /></Field>
-            {preview.isOverridden && <Field label="Current (Overridden)"><Input value={preview.displaySrc} readOnly /></Field>}
-            <Field label="Reference Type">
-              <span className="adm-chip">{preview.refType === 'img' ? '<img> tag' : preview.refType === 'css' ? 'CSS background' : preview.refType === 'css-inline' ? 'Inline style' : preview.refType === 'api' ? 'API response' : 'Unknown'}</span>
-            </Field>
-            {preview.isOverridden && (
-              <div style={{ padding: '.5rem .75rem', background: 'var(--accent-soft)', borderRadius: 7, fontSize: '.82rem', color: 'var(--accent)', marginTop: '.5rem' }}>
-                ✓ This image has been replaced. The website now shows the replacement. Click "Revert" to restore the original.
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
-
-      {/* Replace modal */}
-      <Modal open={!!replaceTarget} onClose={() => setReplaceTarget(null)} title="Replace Image"
-        footer={replaceTarget && (
-          <>
-            <button className="adm-btn" onClick={() => setReplaceTarget(null)}>Cancel</button>
-            <button className="adm-btn adm-btn-primary" onClick={() => { saveOverride(replaceTarget.src, replaceUrl); setReplaceTarget(null); }} disabled={!replaceUrl.trim()}>Save Replacement</button>
-          </>
-        )}>
-        {replaceTarget && (
-          <div>
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.25rem' }}>
-              <div style={{ flex: 1 }}>
-                <div className="adm-muted" style={{ fontSize: '.78rem', marginBottom: '.4rem' }}>Current (Original)</div>
-                <div style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: '4/3', background: 'var(--surface-2)' }}>
-                  <img src={replaceTarget.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-                <div className="adm-muted" style={{ fontSize: '.72rem', marginTop: '.3rem' }}>{replaceTarget.src}</div>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div className="adm-muted" style={{ fontSize: '.78rem', marginBottom: '.4rem' }}>New (Replacement)</div>
-                <div style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: '4/3', background: 'var(--surface-2)' }}>
-                  {replaceUrl ? <img src={replaceUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.opacity = .3; }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>No URL set</div>}
-                </div>
-              </div>
-            </div>
-            <Field label="Replacement Image URL" hint="Upload a new image from your computer, or paste a URL from Media Library (Copy URL button) or any public image URL.">
+            <Field label="Image" required hint="Upload from your computer or paste an image URL.">
               <div style={{ display: 'flex', gap: '.5rem' }}>
-                <Input value={replaceUrl} onChange={(e) => setReplaceUrl(e.target.value)} placeholder="https://… or /uploads/…" style={{ flex: 1 }} />
+                <Input value={editForm.src} onChange={(e) => setEditForm({ ...editForm, src: e.target.value })} placeholder="https://… or /uploads/…" style={{ flex: 1 }} />
                 <button type="button" className="adm-btn" onClick={() => uploadRef.current?.click()} disabled={uploading}>
                   {uploading ? 'Uploading…' : 'Upload'}
                 </button>
               </div>
             </Field>
-            <input ref={uploadRef} type="file" accept="image/*" hidden onChange={async (e) => { const u = await uploadFile(e.target.files[0]); if (u) { setReplaceUrl(u); toast('Uploaded', 'success'); } e.target.value = ''; }} />
-            <div style={{ padding: '.5rem .75rem', background: 'var(--warn-soft)', borderRadius: 7, fontSize: '.82rem', color: 'var(--warn)' }}>
-              ⚠ The original file is not modified. You can revert anytime.
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      {/* Add Image modal — appends a new card to the section on the live site */}
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Image to Section"
-        footer={addOpen && (
-          <>
-            <button className="adm-btn" onClick={() => setAddOpen(false)}>Cancel</button>
-            <button className="adm-btn adm-btn-primary" onClick={addExtra} disabled={!addForm.src.trim()}>Add to Website</button>
-          </>
-        )}>
-        {addOpen && (
-          <div>
-            <div style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: '4/3', background: 'var(--surface-2)', marginBottom: '1rem', maxWidth: 320 }}>
-              {addForm.src ? <img src={addForm.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.opacity = .3; }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>No image</div>}
-            </div>
-            <Field label="Image" required hint="Upload from your computer or paste an image URL.">
-              <div style={{ display: 'flex', gap: '.5rem' }}>
-                <Input value={addForm.src} onChange={(e) => setAddForm({ ...addForm, src: e.target.value })} placeholder="https://… or /uploads/…" style={{ flex: 1 }} />
-                <button type="button" className="adm-btn" onClick={() => addUploadRef.current?.click()} disabled={uploading}>
-                  {uploading ? 'Uploading…' : 'Upload'}
-                </button>
-              </div>
+            <input ref={uploadRef} type="file" accept="image/*" hidden onChange={async (e) => { const u = await uploadFile(e.target.files[0]); if (u) { setEditForm((f) => ({ ...f, src: u })); toast('Uploaded', 'success'); } e.target.value = ''; }} />
+            <Field label="Title" hint="Optional — card heading on the website, where the section supports it.">
+              <Input value={editForm.label} onChange={(e) => setEditForm({ ...editForm, label: e.target.value })} placeholder="e.g. Fireplace Tile" />
             </Field>
-            <input ref={addUploadRef} type="file" accept="image/*" hidden onChange={async (e) => { const u = await uploadFile(e.target.files[0]); if (u) { setAddForm((f) => ({ ...f, src: u })); toast('Uploaded', 'success'); } e.target.value = ''; }} />
-            <Field label="Title" hint="Optional — replaces the card heading on the website.">
-              <Input value={addForm.label} onChange={(e) => setAddForm({ ...addForm, label: e.target.value })} placeholder="e.g. Fireplace Tile" />
+            <Field label="Description" hint="Optional — card text on the website, where the section supports it.">
+              <Textarea rows={2} value={editForm.text} onChange={(e) => setEditForm({ ...editForm, text: e.target.value })} placeholder="Short description shown under the title" />
             </Field>
-            <Field label="Description" hint="Optional — replaces the card text on the website.">
-              <Textarea rows={2} value={addForm.text} onChange={(e) => setAddForm({ ...addForm, text: e.target.value })} placeholder="Short description shown under the title" />
-            </Field>
-            <div style={{ padding: '.5rem .75rem', background: 'var(--accent-soft)', borderRadius: 7, fontSize: '.82rem', color: 'var(--accent)' }}>
-              ✓ The new image card appears at the end of this section on the live website.
+            <div className="adm-field-row">
+              <Field label="Link" hint="Optional — card link (e.g. /residential).">
+                <Input value={editForm.href} onChange={(e) => setEditForm({ ...editForm, href: e.target.value })} placeholder="/residential" />
+              </Field>
+              <Field label="Link Text" hint="Optional — e.g. Explore →">
+                <Input value={editForm.cta} onChange={(e) => setEditForm({ ...editForm, cta: e.target.value })} placeholder="Explore →" />
+              </Field>
             </div>
           </div>
         )}

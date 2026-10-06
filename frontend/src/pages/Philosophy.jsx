@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
+import { useSiteImages, imageUrl } from '../hooks/useContent.js';
 import './Philosophy.css';
 
 export default function Philosophy() {
+  const si = useSiteImages();
   useEffect(() => {
     const reveals = document.querySelectorAll('.ph-reveal');
     const io = new IntersectionObserver((entries) => {
@@ -14,10 +16,10 @@ export default function Philosophy() {
     }, { threshold: 0.1 });
     reveals.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, []);
+  }, [si.data]);
 
   const html = `
-    <section class="ph-hero">
+    <section class="ph-hero" style="background-image:url('${imageUrl(si.get('ph-hero', 0, 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80&auto=format&fit=crop'))}');">
       <div class="ph-hero-inner ph-reveal">
         <p class="eyebrow">Our Belief</p>
         <h1>Our Philosophy</h1>
@@ -114,7 +116,7 @@ export default function Philosophy() {
       </div>
     </section>
 
-    <section class="ph-statement">
+    <section class="ph-statement" style="background-image:url('${imageUrl(si.get('ph-statement', 0, 'https://images.unsplash.com/photo-1774429145093-3e813eedcd7a?w=1920&q=80&auto=format&fit=crop'))}');">
       <div class="ph-statement-inner ph-reveal">
         <h2>We don't just create spaces.<br>We create experiences that last.</h2>
         <p>Design that respects daily life and elevates the ordinary.</p>
@@ -124,7 +126,7 @@ export default function Philosophy() {
     <section class="ph-human">
       <div class="container ph-human-grid">
         <div class="ph-reveal">
-          <img src="/images/IMG_9687.jpg" alt="Warm residential interior with considered details" loading="lazy" decoding="async">
+          <img src="${imageUrl(si.get('ph-human', 0, '/images/IMG_9687.jpg'))}" alt="Warm residential interior with considered details" loading="lazy" decoding="async">
         </div>
         <div class="ph-reveal">
           <h2>Built around people</h2>

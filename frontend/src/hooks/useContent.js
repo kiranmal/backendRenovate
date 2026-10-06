@@ -47,6 +47,39 @@ export function useContent(collection) {
 }
 
 /**
+ * Fetch the site-images map — every website section's images stored in the
+ * backend DB (keyed by section id, e.g. 'res-hero', 'ser-specialty').
+ * Returns { get, list, loaded, data }:
+ *   get(key, idx, fallback)  → src of one image, or fallback when missing
+ *   list(key, fallbackArr)   → array of { src, label, text, href, cta } entries
+ */
+export function useSiteImages() {
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API}/content/site-images`);
+        const json = await res.json();
+        if (!cancelled && json.success) setData(json.data || {});
+      } catch {
+        /* backend down — fall back to static images */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const get = (key, idx = 0, fallback = '') => {
+    const arr = data?.[key];
+    return (Array.isArray(arr) && arr[idx] && arr[idx].src) ? arr[idx].src : fallback;
+  };
+  const list = (key, fallback = []) =>
+    (Array.isArray(data?.[key]) && data[key].length) ? data[key] : fallback;
+
+  return { get, list, loaded: data !== null, data };
+}
+
+/**
  * Fetch the settings object.
  */
 export function useSettings() {

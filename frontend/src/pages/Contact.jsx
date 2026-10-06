@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useSiteImages, imageUrl } from '../hooks/useContent.js';
 import API from '../config.js';
 import './Contact.css';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', type: '', details: '' });
   const [status, setStatus] = useState({ loading: false, success: '', error: '' });
+  const si = useSiteImages();
 
   useEffect(() => {
     const reveals = document.querySelectorAll('.ct-reveal');
@@ -18,7 +20,7 @@ export default function Contact() {
     }, { threshold: 0.1 });
     reveals.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, []);
+  }, [si.data]);
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -52,7 +54,7 @@ export default function Contact() {
 
   return (
     <div className="contact-page">
-      <section className="ct-hero">
+      <section className="ct-hero" style={{ backgroundImage: `url('${imageUrl(si.get('ct-hero', 0, '/images/md-contact.jpg'))}')` }}>
         <div className="ct-hero-inner ct-reveal">
           <p className="eyebrow">Contact</p>
           <h1>Let's Talk</h1>

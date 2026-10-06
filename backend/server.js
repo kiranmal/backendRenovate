@@ -89,6 +89,7 @@ function seed() {
   if (!fs.existsSync(fileFor('image-overrides'))) writeObj('image-overrides', {});
   if (!fs.existsSync(fileFor('image-extras'))) writeObj('image-extras', {});
   if (!fs.existsSync(fileFor('service-images'))) writeObj('service-images', {});
+  if (!fs.existsSync(fileFor('site-images'))) writeObj('site-images', {});
 
   // Store every service menu page's images in the DB.
   // Each slug gets { hero, images, added, removed } — existing admin
@@ -113,6 +114,22 @@ function seed() {
       }
     });
     if (changed) writeObj('service-images', si);
+  } catch { /* seed file missing — skip */ }
+
+  // Store every website section's images in the DB (hero bgs, card images,
+  // intro images…). Existing admin edits are preserved — only missing
+  // or empty section lists get filled from the seed.
+  try {
+    const seedMap = JSON.parse(fs.readFileSync(path.join(__dirname, 'site-images-seed.json'), 'utf8'));
+    const ti = readObj('site-images');
+    let changed = false;
+    Object.entries(seedMap).forEach(([key, list]) => {
+      if (!Array.isArray(ti[key]) || ti[key].length === 0) {
+        ti[key] = list;
+        changed = true;
+      }
+    });
+    if (changed) writeObj('site-images', ti);
   } catch { /* seed file missing — skip */ }
 }
 seed();
@@ -150,6 +167,10 @@ app.get('/api/content/image-extras', (req, res) => {
 });
 app.get('/api/content/service-images', (req, res) => {
   res.json({ success: true, data: readObj('service-images') });
+});
+
+app.get('/api/content/site-images', (req, res) => {
+  res.json({ success: true, data: readObj('site-images') });
 });
 app.get('/api/content/:collection', (req, res) => {
   const allowed = ['services', 'projects', 'testimonials', 'settings', 'seo'];
@@ -393,6 +414,17 @@ app.put('/api/admin/service-images', requireAdmin, (req, res) => {
   const next = { ...(req.body || {}) };
   writeObj('service-images', next);
   logActivity('service_images_updated');
+  res.json({ success: true, data: next });
+});
+
+/* ---------- site images — per page/section image lists ---------- */
+app.get('/api/admin/site-images', requireAdmin, (req, res) => {
+  res.json({ success: true, data: readObj('site-images') });
+});
+app.put('/api/admin/site-images', requireAdmin, (req, res) => {
+  const next = { ...(req.body || {}) };
+  writeObj('site-images', next);
+  logActivity('site_images_updated');
   res.json({ success: true, data: next });
 });
 

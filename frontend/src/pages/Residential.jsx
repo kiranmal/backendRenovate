@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
-import { useContent, imageUrl } from '../hooks/useContent.js';
+import { useContent, useSiteImages, imageUrl } from '../hooks/useContent.js';
 import './Residential.css';
 
 export default function Residential() {
   const { data: projects, loading } = useContent('projects');
+  const si = useSiteImages();
 
   useEffect(() => {
     const reveals = document.querySelectorAll('.res-reveal');
@@ -17,7 +18,7 @@ export default function Residential() {
     }, { threshold: 0.1 });
     reveals.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, [projects, loading]);
+  }, [projects, loading, si.data]);
 
   // Default static work items (shown if backend has no projects yet)
   const fallbackWork = [
@@ -25,12 +26,12 @@ export default function Residential() {
     { title: 'Bathroom', image: '/images/IMG_0447.jpg' },
     { title: 'Custom Shower', image: '/images/IMG_0460.jpg' },
     { title: 'Living Space', image: '/images/IMG_9687.jpg' },
-  ];
+  ].map((p, i) => ({ ...p, image: si.get('res-work', i, p.image), title: si.list('res-work')[i]?.label || p.title }));
   const workItems = (projects && projects.length > 0) ? projects : fallbackWork;
 
   return (
     <div className="residential-page">
-      <section className="res-hero">
+      <section className="res-hero" style={{ backgroundImage: `url('${imageUrl(si.get('res-hero', 0, '/images/md-residential.jpg'))}')` }}>
         <div className="res-hero-inner res-reveal">
           <p className="eyebrow">Residential</p>
           <h1>Residential</h1>
@@ -45,7 +46,7 @@ export default function Residential() {
       <section className="res-intro">
         <div className="container res-intro-grid">
           <div className="res-reveal">
-            <img src="/images/IMG_9687.jpg" alt="Refined residential interior" loading="lazy" decoding="async" />
+            <img src={imageUrl(si.get('res-intro', 0, '/images/IMG_9687.jpg'))} alt="Refined residential interior" loading="lazy" decoding="async" />
           </div>
           <div className="res-reveal">
             <h2>Spaces made for living.</h2>
@@ -115,7 +116,7 @@ export default function Residential() {
         </div>
       </section>
 
-      <section className="res-statement">
+      <section className="res-statement" style={{ backgroundImage: `url('${imageUrl(si.get('res-statement', 0, 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80&auto=format&fit=crop'))}')` }}>
         <div className="res-statement-inner res-reveal">
           <h2>Details make the difference.</h2>
           <p>From material selection to the final installation, every detail is considered.</p>

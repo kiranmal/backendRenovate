@@ -1,0 +1,121 @@
+{
+  "home": [
+    { "src": "/images/md-contact.jpg", "label": "Hero Background" }
+  ],
+  "philosophy": [
+    { "src": "/images/IMG_0455.jpg", "label": "Residential", "text": "Every home has its own rhythm. We craft bathrooms, kitchens, showers and floors with care — balancing the clean lines of modern design with the practical demands of daily life." },
+    { "src": "/images/IMG_0212.jpg", "label": "Bathrooms", "text": "We build bathrooms that feel like a retreat and function like a machine, with waterproofing, precise tile work and custom showers that last." },
+    { "src": "/images/IMG_0308.jpg", "label": "Kitchens", "text": "The kitchen is the heart of the home. We install backsplashes, floors and finishes that balance warmth, texture and everyday practicality." }
+  ],
+  "residential": [
+    { "src": "/images/IMG_0447.jpg", "label": "Category Background" }
+  ],
+  "work": [
+    { "src": "/images/IMG_0573.JPG.jpeg", "label": "Modern Bathroom", "text": "A complete modern bathroom with marble-look floor, double vanity and a clean, glass shower." },
+    { "src": "/images/IMG_0595.JPG.jpeg", "label": "Open Kitchen", "text": "A bright open kitchen and living area finished with large-format tile, warm cabinetry and clean sightlines." },
+    { "src": "/images/IMG_9545.jpg", "label": "Custom Shower", "text": "Frameless glass and a recessed tile niche, finished with mitered edges for a precise, high-end look." }
+  ],
+  "tiles": [
+    { "src": "/images/IMG_0383.jpg", "label": "Category Background" }
+  ],
+  "work-tiles": [
+    { "src": "/images/IMG_9389.jpg", "label": "Patterned Hallway", "text": "Hexagon tile flooring laid in a hallway, creating visual rhythm and long-term durability." },
+    { "src": "/images/IMG_9415.jpg", "label": "Large-Format Floor", "text": "Large-format grey tile flooring with clean grout lines and a professional finish." },
+    { "src": "/images/IMG_9564.jpg", "label": "Geometric Floor", "text": "Patterned hexagon tiles arranged with precision for visual rhythm in wet areas and entries." },
+    { "src": "/images/IMG_0609.JPG.jpeg", "label": "Hex Tile Detail", "text": "A close-up of hexagonal tile flooring with a bold black-and-white pattern and crisp grout lines." }
+  ],
+  "bathrooms": [
+    { "src": "/images/IMG_0635.JPG.jpeg", "label": "Category Background" }
+  ],
+  "work-bathrooms": [
+    { "src": "/images/IMG_0608.JPG.jpeg", "label": "Modern Bathroom", "text": "A full bathroom with floor-to-ceiling tile, modern fixtures and a clean, bright finish." },
+    { "src": "/images/IMG_0573.JPG.jpeg", "label": "Double Vanity", "text": "His and hers vanities, LED mirrors and soft storage in a bright, modern bathroom." },
+    { "src": "/images/IMG_8818.jpg", "label": "Complete Bathroom", "text": "A full bathroom with freestanding tub, vanity and floor-to-ceiling tile for a refined finish." },
+    { "src": "/images/IMG_0578.JPG.jpeg", "label": "Elegant Double Vanity", "text": "A bright double vanity with brushed gold fixtures, round mirrors and marble-look floor tile." },
+    { "src": "/images/IMG_0634.JPG.jpeg", "label": "Custom Vanity", "text": "A modern bathroom with warm wood cabinetry, vessel sinks and clean, simple lines." },
+    { "src": "/images/IMG_8820.jpg", "label": "Marble Bathroom", "text": "Marble-look tile throughout for a bright, refined bathroom finish." },
+    { "src": "/images/IMG_9662.jpg", "label": "Bathroom Renovation", "text": "A complete bathroom refresh with new tile, fixtures and finishes." }
+  ],
+  "showers": [
+    { "src": "/images/IMG_0618.JPG.jpeg", "label": "Category Background" }
+  ],
+  "work-showers": [
+    { "src": "/images/IMG_0581.JPG.jpeg", "label": "Glass Enclosure", "text": "Frameless glass and neutral tile create a spacious, spa-like shower." },
+    { "src": "/images/IMG_9545.jpg", "label": "Recessed Niche", "text": "A built-in niche finished with accent tile for toiletries and clean styling." },
+    { "src": "/images/IMG_0604.jpg", "label": "Tub & Shower", "text": "A tub and shower surround finished in marble-look tile for a calm, refined wet area." },
+    { "src": "/images/IMG_0572.JPG.jpeg", "label": "Premium Custom Shower", "text": "A luxury walk-in shower with brushed gold fixtures, marble-look tile, hexagon floor and a built-in bench." },
+    { "src": "/images/IMG_0574.JPG.jpeg", "label": "Tub & Shower Combo", "text": "A tub and shower combination with matte black fixtures and a hexagonal accent niche." },
+    { "src": "/images/IMG_9437.jpg", "label": "Shower Base & Tile", "text": "Shower base installation with patterned floor tile — solid waterproofing underneath." },
+    { "src": "/images/IMG_9543.jpg", "label": "Custom Tile Shower", "text": "Custom tile work in a walk-in shower, built to perform and made to last." },
+    { "src": "/images/IMG_9546.jpg", "label": "Hex Feature Shower", "text": "A feature wall of hexagonal patterned tile turns this shower into a focal point." }
+  ],
+  "kitchens": [
+    { "src": "/images/IMG_0455.jpg", "label": "Category Background" }
+  ],
+  "work-kitchens": [
+    { "src": "/images/IMG_0308.jpg", "label": "Subway Backsplash", "text": "A clean white subway tile backsplash that brightens the kitchen and complements the cabinets." },
+    { "src": "/images/IMG_0447.jpg", "label": "Warm Kitchen", "text": "A spacious open kitchen finished with marble-look flooring and warm natural light." },
+    { "src": "/images/IMG_0595.JPG.jpeg", "label": "Marble Backsplash", "text": "Marble-look tile backsplash that brings quiet luxury behind the range." }
+  ],
+  "about": [
+    { "src": "/images/IMG_9687.jpg", "label": "About Image" }
+  ],
+  "ser-hero": [
+    { "src": "/images/md-services.jpg", "label": "Hero Background" }
+  ],
+  "ser-intro": [
+    { "src": "/images/IMG_0308.jpg", "label": "Intro Image" }
+  ],
+  "ser-specialty": [
+    { "src": "/images/IMG_9381.jpg", "label": "45° Angles", "text": "Precise cuts and professional finishing." },
+    { "src": "/images/IMG_9389.jpg", "label": "All Tile Formats", "text": "Experience with different tile sizes, shapes, and formats." },
+    { "src": "/images/IMG_9446.jpg", "label": "Custom Finishes", "text": "Detailed solutions tailored to each project." }
+  ],
+  "ser-areas": [
+    { "src": "/images/IMG_9687.jpg", "label": "Residential", "text": "Homes, renovations, bathrooms, kitchens, flooring, and custom spaces.", "href": "/residential", "cta": "Explore Residential →" },
+    { "src": "/images/IMG_0212.jpg", "label": "Commercial", "text": "Professional tile, flooring, repairs, and installation solutions.", "href": "/", "cta": "Explore Commercial →" }
+  ],
+  "res-hero": [
+    { "src": "/images/md-residential.jpg", "label": "Hero Background" }
+  ],
+  "res-intro": [
+    { "src": "/images/IMG_9687.jpg", "label": "Intro Image" }
+  ],
+  "res-work": [
+    { "src": "/images/IMG_0308.jpg", "label": "Kitchen" },
+    { "src": "/images/IMG_0447.jpg", "label": "Bathroom" },
+    { "src": "/images/IMG_0460.jpg", "label": "Custom Shower" },
+    { "src": "/images/IMG_9687.jpg", "label": "Living Space" }
+  ],
+  "res-statement": [
+    { "src": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80&auto=format&fit=crop", "label": "Statement Background" }
+  ],
+  "abt-hero": [
+    { "src": "/images/IMG_0455.jpg", "label": "Hero Background" }
+  ],
+  "abt-who": [
+    { "src": "/images/IMG_9687.jpg", "label": "Interior Image" }
+  ],
+  "abt-founder": [
+    { "src": "/images/IMG_9545.jpg", "label": "Tile Detail" }
+  ],
+  "abt-areas": [
+    { "src": "/images/IMG_0447.jpg", "label": "Residential", "text": "Creating comfortable, functional, and beautifully finished spaces for homeowners.", "href": "/residential", "cta": "Explore →" },
+    { "src": "/images/IMG_9415.jpg", "label": "Commercial", "text": "Providing professional installation and improvement solutions for commercial spaces.", "href": "/", "cta": "Explore →" }
+  ],
+  "ph-hero": [
+    { "src": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80&auto=format&fit=crop", "label": "Hero Background" }
+  ],
+  "ph-statement": [
+    { "src": "https://images.unsplash.com/photo-1774429145093-3e813eedcd7a?w=1920&q=80&auto=format&fit=crop", "label": "Statement Background" }
+  ],
+  "ph-human": [
+    { "src": "/images/IMG_9687.jpg", "label": "Interior Image" }
+  ],
+  "ct-hero": [
+    { "src": "/images/md-contact.jpg", "label": "Hero Background" }
+  ],
+  "header-logo": [
+    { "src": "/images/logo.png", "label": "Company Logo" }
+  ]
+}

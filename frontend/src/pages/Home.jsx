@@ -1,6 +1,8 @@
 import WorkSection from '../components/WorkSection.jsx';
+import { useSiteImages, imageUrl } from '../hooks/useContent.js';
 
 export default function Home() {
+  const si = useSiteImages();
   // Fallback items for each category (used if backend has no projects)
   const fallbackResidential = [
     { title: 'Modern Bathroom', image: '/images/IMG_0573.JPG.jpeg', description: 'A complete modern bathroom with marble-look floor, double vanity and a clean, glass shower.' },
@@ -39,7 +41,7 @@ export default function Home() {
   ];
 
   const html1 = `
-<section class="hero" id="home">
+<section class="hero" id="home" style="background-image:url('${imageUrl(si.get('home', 0, '/images/md-contact.jpg'))}');">
   <div class="hero-inner">
     <p class="eyebrow">Tile &amp; Flooring · Residential &amp; Commercial</p>
     <h1>We design spaces<br>that feel timeless.</h1>
@@ -64,21 +66,21 @@ export default function Home() {
     <div class="triad-grid">
       <article class="card">
         <div class="thumb">
-          <img src="/images/IMG_0455.jpg" alt="Open kitchen and living space" loading="lazy" decoding="async">
+          <img src="${imageUrl(si.get('philosophy', 0, '/images/IMG_0455.jpg'))}" alt="Open kitchen and living space" loading="lazy" decoding="async">
         </div>
         <h3>Residential</h3>
         <p>Every home has its own rhythm. We craft bathrooms, kitchens, showers and floors with care — balancing the clean lines of modern design with the practical demands of daily life.</p>
       </article>
       <article class="card">
         <div class="thumb">
-          <img src="/images/IMG_0212.jpg" alt="Freestanding bathtub in a light-filled bathroom" loading="lazy" decoding="async">
+          <img src="${imageUrl(si.get('philosophy', 1, '/images/IMG_0212.jpg'))}" alt="Freestanding bathtub in a light-filled bathroom" loading="lazy" decoding="async">
         </div>
         <h3>Bathrooms</h3>
         <p>We build bathrooms that feel like a retreat and function like a machine, with waterproofing, precise tile work and custom showers that last.</p>
       </article>
       <article class="card">
         <div class="thumb">
-          <img src="/images/IMG_0308.jpg" alt="White subway tile kitchen backsplash" loading="lazy" decoding="async">
+          <img src="${imageUrl(si.get('philosophy', 2, '/images/IMG_0308.jpg'))}" alt="White subway tile kitchen backsplash" loading="lazy" decoding="async">
         </div>
         <h3>Kitchens</h3>
         <p>The kitchen is the heart of the home. We install backsplashes, floors and finishes that balance warmth, texture and everyday practicality.</p>
@@ -87,7 +89,7 @@ export default function Home() {
   </div>
 </section>
 
-<section class="category" id="residential" style="background-image:url('/images/IMG_0447.jpg');">
+<section class="category" id="residential" style="background-image:url('${imageUrl(si.get('residential', 0, '/images/IMG_0447.jpg'))}');">
   <div class="cat-content">
     <p class="eyebrow">Residential</p>
     <h2>Residential</h2>
@@ -97,7 +99,7 @@ export default function Home() {
   `;
 
   const html2 = `
-<section class="category" id="tiles" style="background-image:url('/images/IMG_0383.jpg');">
+<section class="category" id="tiles" style="background-image:url('${imageUrl(si.get('tiles', 0, '/images/IMG_0383.jpg'))}');">
   <div class="cat-content">
     <p class="eyebrow">Tile &amp; Flooring</p>
     <h2>Tiles</h2>
@@ -107,7 +109,7 @@ export default function Home() {
   `;
 
   const html3 = `
-<section class="category" id="bathrooms" style="background-image:url('/images/IMG_0635.JPG.jpeg');">
+<section class="category" id="bathrooms" style="background-image:url('${imageUrl(si.get('bathrooms', 0, '/images/IMG_0635.JPG.jpeg'))}');">
   <div class="cat-content">
     <p class="eyebrow">Bathrooms</p>
     <h2>Bathrooms</h2>
@@ -117,7 +119,7 @@ export default function Home() {
   `;
 
   const html4 = `
-<section class="category" id="showers" style="background-image:url('/images/IMG_0618.JPG.jpeg');">
+<section class="category" id="showers" style="background-image:url('${imageUrl(si.get('showers', 0, '/images/IMG_0618.JPG.jpeg'))}');">
   <div class="cat-content">
     <p class="eyebrow">Showers &amp; Waterproofing</p>
     <h2>Showers</h2>
@@ -127,7 +129,7 @@ export default function Home() {
   `;
 
   const html5 = `
-<section class="category" id="kitchens" style="background-image:url('/images/IMG_0455.jpg');">
+<section class="category" id="kitchens" style="background-image:url('${imageUrl(si.get('kitchens', 0, '/images/IMG_0455.jpg'))}');">
   <div class="cat-content">
     <p class="eyebrow">Kitchens &amp; Backsplashes</p>
     <h2>Kitchens</h2>
@@ -196,7 +198,7 @@ export default function Home() {
   <div class="container">
     <div class="about-grid">
       <div>
-        <img src="/images/IMG_9687.jpg" alt="Completed open interior renovation" loading="lazy" decoding="async">
+        <img src="${imageUrl(si.get('about', 0, '/images/IMG_9687.jpg'))}" alt="Completed open interior renovation" loading="lazy" decoding="async">
       </div>
       <div>
         <p class="eyebrow">About Us</p>
@@ -252,15 +254,15 @@ export default function Home() {
   return (
     <div>
       <div dangerouslySetInnerHTML={{ __html: html1 }} />
-      <WorkSection category="Residential" eyebrow="Residential" fallback={fallbackResidential} limit={3} />
+      <WorkSection category="Residential" eyebrow="Residential" fallback={fallbackResidential.map((p, i) => ({ ...p, image: si.get('work', i, p.image) }))} limit={3} />
       <div dangerouslySetInnerHTML={{ __html: html2 }} />
-      <WorkSection category="Tile & Flooring" eyebrow="Tile & Flooring" fallback={fallbackTiles} limit={3} />
+      <WorkSection category="Tile & Flooring" eyebrow="Tile & Flooring" fallback={fallbackTiles.map((p, i) => ({ ...p, image: si.get('work-tiles', i, p.image) }))} limit={3} />
       <div dangerouslySetInnerHTML={{ __html: html3 }} />
-      <WorkSection category="Bathroom" eyebrow="Bathrooms" fallback={fallbackBathrooms} limit={3} />
+      <WorkSection category="Bathroom" eyebrow="Bathrooms" fallback={fallbackBathrooms.map((p, i) => ({ ...p, image: si.get('work-bathrooms', i, p.image) }))} limit={3} />
       <div dangerouslySetInnerHTML={{ __html: html4 }} />
-      <WorkSection category="Shower" eyebrow="Showers" fallback={fallbackShowers} limit={3} />
+      <WorkSection category="Shower" eyebrow="Showers" fallback={fallbackShowers.map((p, i) => ({ ...p, image: si.get('work-showers', i, p.image) }))} limit={3} />
       <div dangerouslySetInnerHTML={{ __html: html5 }} />
-      <WorkSection category="Kitchen" eyebrow="Kitchens" fallback={fallbackKitchens} limit={3} />
+      <WorkSection category="Kitchen" eyebrow="Kitchens" fallback={fallbackKitchens.map((p, i) => ({ ...p, image: si.get('work-kitchens', i, p.image) }))} limit={3} />
       <div dangerouslySetInnerHTML={{ __html: html6 }} />
     </div>
   );

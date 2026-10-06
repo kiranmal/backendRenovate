@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useContent, imageUrl } from '../hooks/useContent.js';
+import { useContent, useSiteImages, imageUrl } from '../hooks/useContent.js';
 import { SERVICES as SERVICE_PAGES } from '../data/servicesData.js';
 import API from '../config.js';
 import './Services.css';
@@ -13,6 +13,7 @@ const slugFor = (title = '') => {
 
 export default function Services() {
   const { data: services, loading } = useContent('services');
+  const si = useSiteImages();
   const [svcImages, setSvcImages] = useState({});
   const pageRef = useRef(null);
 
@@ -35,7 +36,7 @@ export default function Services() {
     }, { threshold: 0.1 });
     reveals.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, [services, loading]);
+  }, [services, loading, si.data]);
 
   // Default static services (shown if backend has no data yet)
   const fallbackServices = [
@@ -53,7 +54,7 @@ export default function Services() {
 
   return (
     <div className="services-page" ref={pageRef}>
-      <section className="ser-hero">
+      <section className="ser-hero" style={{ backgroundImage: `url('${imageUrl(si.get('ser-hero', 0, '/images/md-services.jpg'))}')` }}>
         <div className="ser-hero-inner ser-reveal">
           <p className="eyebrow">Services</p>
           <h1>Services</h1>
@@ -65,7 +66,7 @@ export default function Services() {
       <section className="ser-intro">
         <div className="container ser-intro-grid">
           <div className="ser-reveal">
-            <img src="/images/IMG_0308.jpg" alt="Modern kitchen interior" loading="lazy" decoding="async" />
+            <img src={imageUrl(si.get('ser-intro', 0, '/images/IMG_0308.jpg'))} alt="Modern kitchen interior" loading="lazy" decoding="async" />
           </div>
           <div className="ser-reveal">
             <h2>Built around quality.</h2>
@@ -107,55 +108,40 @@ export default function Services() {
             <div className="line"></div>
           </div>
           <div className="ser-specialty-grid">
-            <article className="ser-specialty-card ser-reveal">
-              <div className="thumb">
-                <img src="/images/IMG_9381.jpg" alt="45 degree tile cuts" loading="lazy" decoding="async" />
-              </div>
-              <div className="body">
-                <h3>45° Angles</h3>
-                <p>Precise cuts and professional finishing.</p>
-              </div>
-            </article>
-            <article className="ser-specialty-card ser-reveal">
-              <div className="thumb">
-                <img src="/images/IMG_9389.jpg" alt="Different tile formats" loading="lazy" decoding="async" />
-              </div>
-              <div className="body">
-                <h3>All Tile Formats</h3>
-                <p>Experience with different tile sizes, shapes, and formats.</p>
-              </div>
-            </article>
-            <article className="ser-specialty-card ser-reveal">
-              <div className="thumb">
-                <img src="/images/IMG_9446.jpg" alt="Custom fireplace finish" loading="lazy" decoding="async" />
-              </div>
-              <div className="body">
-                <h3>Custom Finishes</h3>
-                <p>Detailed solutions tailored to each project.</p>
-              </div>
-            </article>
+            {si.list('ser-specialty', [
+              { src: '/images/IMG_9381.jpg', label: '45° Angles', text: 'Precise cuts and professional finishing.' },
+              { src: '/images/IMG_9389.jpg', label: 'All Tile Formats', text: 'Experience with different tile sizes, shapes, and formats.' },
+              { src: '/images/IMG_9446.jpg', label: 'Custom Finishes', text: 'Detailed solutions tailored to each project.' },
+            ]).map((c, i) => (
+              <article className="ser-specialty-card ser-reveal" key={i}>
+                <div className="thumb">
+                  <img src={imageUrl(c.src)} alt={c.label || 'Specialty'} loading="lazy" decoding="async" />
+                </div>
+                <div className="body">
+                  <h3>{c.label}</h3>
+                  <p>{c.text}</p>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
 
       <section className="ser-areas">
         <div className="container ser-areas-grid">
-          <a href="/residential" className="ser-area ser-reveal">
-            <img src="/images/IMG_9687.jpg" alt="Residential space" loading="lazy" decoding="async" />
-            <div className="ser-area-content">
-              <h3>Residential</h3>
-              <p>Homes, renovations, bathrooms, kitchens, flooring, and custom spaces.</p>
-              <span>Explore Residential →</span>
-            </div>
-          </a>
-          <a href="/" className="ser-area ser-reveal">
-            <img src="/images/IMG_0212.jpg" alt="Commercial space" loading="lazy" decoding="async" />
-            <div className="ser-area-content">
-              <h3>Commercial</h3>
-              <p>Professional tile, flooring, repairs, and installation solutions.</p>
-              <span>Explore Commercial →</span>
-            </div>
-          </a>
+          {si.list('ser-areas', [
+            { src: '/images/IMG_9687.jpg', label: 'Residential', text: 'Homes, renovations, bathrooms, kitchens, flooring, and custom spaces.', href: '/residential', cta: 'Explore Residential →' },
+            { src: '/images/IMG_0212.jpg', label: 'Commercial', text: 'Professional tile, flooring, repairs, and installation solutions.', href: '/', cta: 'Explore Commercial →' },
+          ]).map((a, i) => (
+            <a href={a.href || '/'} className="ser-area ser-reveal" key={i}>
+              <img src={imageUrl(a.src)} alt={a.label || 'Area'} loading="lazy" decoding="async" />
+              <div className="ser-area-content">
+                <h3>{a.label}</h3>
+                <p>{a.text}</p>
+                <span>{a.cta || 'Explore →'}</span>
+              </div>
+            </a>
+          ))}
         </div>
       </section>
 
