@@ -176,7 +176,8 @@
     .form button:hover { background: #d4b96e; }
 
     footer { background: var(--off); color: rgba(28,26,23,.75); padding: 5rem 0 2rem; border-top: 1px solid rgba(28,26,23,.1); }
-    footer .top { display: grid; grid-template-columns: 1.5fr 1fr 1.5fr; gap: 3rem; }
+    footer .top { display: grid; grid-template-columns: 1.4fr .9fr 1fr 1.3fr; gap: 3rem; }
+    @media (max-width: 1024px) { footer .top { grid-template-columns: 1fr 1fr; gap: 2.5rem; } }
     footer h3 { font-size: 1.8rem; letter-spacing: -0.04em; margin-bottom: 1.5rem; color: var(--charcoal); }
     footer h4 { color: var(--charcoal); font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; margin-bottom: 1.2rem; }
     footer p { font-size: .9rem; margin: 0 0 .6rem; line-height: 1.7; }
