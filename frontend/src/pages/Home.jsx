@@ -11,16 +11,26 @@ export default function Home() {
     { title: 'Patterned Hallway', image: '/images/IMG_9389.jpg', description: 'Hexagon tile flooring laid in a hallway, creating visual rhythm and long-term durability.' },
     { title: 'Large-Format Floor', image: '/images/IMG_9415.jpg', description: 'Large-format grey tile flooring with clean grout lines and a professional finish.' },
     { title: 'Geometric Floor', image: '/images/IMG_9564.jpg', description: 'Patterned hexagon tiles arranged with precision for visual rhythm in wet areas and entries.' },
+    { title: 'Hex Tile Detail', image: '/images/IMG_0609.JPG.jpeg', description: 'A close-up of hexagonal tile flooring with a bold black-and-white pattern and crisp grout lines.' },
   ];
   const fallbackBathrooms = [
     { title: 'Modern Bathroom', image: '/images/IMG_0608.JPG.jpeg', description: 'A full bathroom with floor-to-ceiling tile, modern fixtures and a clean, bright finish.' },
     { title: 'Double Vanity', image: '/images/IMG_0573.JPG.jpeg', description: 'His and hers vanities, LED mirrors and soft storage in a bright, modern bathroom.' },
     { title: 'Complete Bathroom', image: '/images/IMG_8818.jpg', description: 'A full bathroom with freestanding tub, vanity and floor-to-ceiling tile for a refined finish.' },
+    { title: 'Elegant Double Vanity', image: '/images/IMG_0578.JPG.jpeg', description: 'A bright double vanity with brushed gold fixtures, round mirrors and marble-look floor tile.' },
+    { title: 'Custom Vanity', image: '/images/IMG_0634.JPG.jpeg', description: 'A modern bathroom with warm wood cabinetry, vessel sinks and clean, simple lines.' },
+    { title: 'Marble Bathroom', image: '/images/IMG_8820.jpg', description: 'Marble-look tile throughout for a bright, refined bathroom finish.' },
+    { title: 'Bathroom Renovation', image: '/images/IMG_9662.jpg', description: 'A complete bathroom refresh with new tile, fixtures and finishes.' },
   ];
   const fallbackShowers = [
     { title: 'Glass Enclosure', image: '/images/IMG_0581.JPG.jpeg', description: 'Frameless glass and neutral tile create a spacious, spa-like shower.' },
     { title: 'Recessed Niche', image: '/images/IMG_9545.jpg', description: 'A built-in niche finished with accent tile for toiletries and clean styling.' },
     { title: 'Tub & Shower', image: '/images/IMG_0604.jpg', description: 'A tub and shower surround finished in marble-look tile for a calm, refined wet area.' },
+    { title: 'Premium Custom Shower', image: '/images/IMG_0572.JPG.jpeg', description: 'A luxury walk-in shower with brushed gold fixtures, marble-look tile, hexagon floor and a built-in bench.' },
+    { title: 'Tub & Shower Combo', image: '/images/IMG_0574.JPG.jpeg', description: 'A tub and shower combination with matte black fixtures and a hexagonal accent niche.' },
+    { title: 'Shower Base & Tile', image: '/images/IMG_9437.jpg', description: 'Shower base installation with patterned floor tile — solid waterproofing underneath.' },
+    { title: 'Custom Tile Shower', image: '/images/IMG_9543.jpg', description: 'Custom tile work in a walk-in shower, built to perform and made to last.' },
+    { title: 'Hex Feature Shower', image: '/images/IMG_9546.jpg', description: 'A feature wall of hexagonal patterned tile turns this shower into a focal point.' },
   ];
   const fallbackKitchens = [
     { title: 'Subway Backsplash', image: '/images/IMG_0308.jpg', description: 'A clean white subway tile backsplash that brightens the kitchen and complements the cabinets.' },
