@@ -6,6 +6,7 @@ import Home from './pages/Home.jsx';
 import Philosophy from './pages/Philosophy.jsx';
 import Residential from './pages/Residential.jsx';
 import Services from './pages/Services.jsx';
+import ServiceDetail from './pages/ServiceDetail.jsx';
 import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
 import Admin from './admin/Admin.jsx';
@@ -39,6 +40,7 @@ function Layout() {
         <Route path="/philosophy" element={<Philosophy />} />
         <Route path="/residential" element={<Residential />} />
         <Route path="/services" element={<Services />} />
+        <Route path="/services/:slug" element={<ServiceDetail />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<Admin />} />

@@ -1,6 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { useContent, imageUrl } from '../hooks/useContent.js';
+import { SERVICES as SERVICE_PAGES } from '../data/servicesData.js';
 import './Services.css';
+
+const slugFor = (title = '') => {
+  const t = title.toLowerCase().replace(/&/g, 'and');
+  const match = SERVICE_PAGES.find((s) => t.includes(s.title.toLowerCase()) || s.title.toLowerCase().includes(t));
+  if (match) return match.slug;
+  return t.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+};
 
 export default function Services() {
   const { data: services, loading } = useContent('services');
@@ -65,7 +73,7 @@ export default function Services() {
           </div>
           <div className="ser-services-grid">
             {activeServices.map((s, i) => (
-              <article className="ser-service ser-reveal" key={s.id || i}>
+              <a href={`/services/${slugFor(s.title)}`} className="ser-service ser-reveal" key={s.id || i} style={{ textDecoration: 'none', color: 'inherit', display: 'block', cursor: 'pointer' }}>
                 {s.image && (
                   <div style={{ marginBottom: '1rem', borderRadius: '8px', overflow: 'hidden' }}>
                     <img src={imageUrl(s.image)} alt={s.title} loading="lazy" decoding="async" style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }} />
@@ -74,7 +82,7 @@ export default function Services() {
                 <p className="num">{String(i + 1).padStart(2, '0')} — {s.icon && s.icon.length <= 3 ? s.icon : s.title}</p>
                 <h3>{s.title}</h3>
                 <p>{s.summary || s.description}</p>
-              </article>
+              </a>
             ))}
           </div>
         </div>

@@ -22,6 +22,20 @@ export default function Footer() {
         </ul>
       </div>
       <div>
+        <h4>Services</h4>
+        <ul class="footer-nav">
+          <li><a href="/services/tile-flooring" class="link-underline">Tile &amp; Flooring</a></li>
+          <li><a href="/services/bathroom-upgrades" class="link-underline">Bathroom Upgrades</a></li>
+          <li><a href="/services/custom-showers" class="link-underline">Custom Showers</a></li>
+          <li><a href="/services/kitchen-backsplash" class="link-underline">Kitchen Backsplash</a></li>
+          <li><a href="/services/waterproofing" class="link-underline">Waterproofing</a></li>
+          <li><a href="/services/fireplace-tile" class="link-underline">Fireplace Tile</a></li>
+          <li><a href="/services/mitered-finishes" class="link-underline">45° Mitered Finishes</a></li>
+          <li><a href="/services/home-repairs" class="link-underline">Home Repairs</a></li>
+          <li><a href="/services/appliance-installation" class="link-underline">Appliance Installation</a></li>
+        </ul>
+      </div>
+      <div>
         <h4>Studio</h4>
         <p>Renovate Max2Max Inc.<br>Edmonton, Alberta<br>Canada</p>
         <p style="margin-top:1rem;">

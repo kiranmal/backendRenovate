@@ -5,7 +5,7 @@ import { useContent, imageUrl } from '../hooks/useContent.js';
  * a triad grid of project cards for a given category.
  * Falls back to provided static items if no API projects exist.
  */
-export default function WorkSection({ category, eyebrow, fallback = [] }) {
+export default function WorkSection({ category, eyebrow, fallback = [], limit }) {
   const { data: projects, loading } = useContent('projects');
 
   // Filter API projects by category (case-insensitive partial match)
@@ -16,7 +16,8 @@ export default function WorkSection({ category, eyebrow, fallback = [] }) {
   });
 
   // Use API projects if available, otherwise fallback to static items
-  const items = apiProjects.length > 0 ? apiProjects : fallback;
+  let items = apiProjects.length > 0 ? apiProjects : fallback;
+  if (limit) items = items.slice(0, limit);
 
   if (items.length === 0) return null;
 

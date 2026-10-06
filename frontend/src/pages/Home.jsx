@@ -143,51 +143,51 @@ export default function Home() {
     <h2 class="section-title">Our Services</h2>
     <p class="lead">From carefully laid floors to precisely cut edges, every service is delivered with the discipline of a craftsman and the care of someone who treats your space as their own.</p>
     <div class="service-grid">
-      <div class="service">
+      <a href="/services/tile-flooring" class="service service-link" style="text-decoration:none;color:inherit;display:block;">
         <p class="num">01</p>
         <h3>Tile &amp; Flooring</h3>
         <p>We install porcelain, ceramic and stone tiles with clean grout lines, level surfaces and finishes that feel solid underfoot for years.</p>
-      </div>
-      <div class="service">
+      </a>
+      <a href="/services/bathroom-upgrades" class="service service-link" style="text-decoration:none;color:inherit;display:block;">
         <p class="num">02</p>
         <h3>Bathroom Upgrades</h3>
         <p>Complete bathroom transformations — new tile walls, floors, fixtures and waterproofing that turn an ordinary room into a calm, durable retreat.</p>
-      </div>
-      <div class="service">
+      </a>
+      <a href="/services/custom-showers" class="service service-link" style="text-decoration:none;color:inherit;display:block;">
         <p class="num">03</p>
         <h3>Custom Showers</h3>
         <p>Built from the waterproofing layer up, with custom tile layouts, niche details and mitered edges that look as good as they perform.</p>
-      </div>
-      <div class="service">
+      </a>
+      <a href="/services/kitchen-backsplash" class="service service-link" style="text-decoration:none;color:inherit;display:block;">
         <p class="num">04</p>
         <h3>Kitchen Backsplash</h3>
         <p>Backsplashes that frame the kitchen with texture and colour, installed with precision around outlets, corners and cabinets.</p>
-      </div>
-      <div class="service">
+      </a>
+      <a href="/services/waterproofing" class="service service-link" style="text-decoration:none;color:inherit;display:block;">
         <p class="num">05</p>
         <h3>Waterproofing</h3>
         <p>Solid waterproofing for showers, bathrooms and wet areas so the beauty on the surface is backed by protection underneath.</p>
-      </div>
-      <div class="service">
+      </a>
+      <a href="/services/fireplace-tile" class="service service-link" style="text-decoration:none;color:inherit;display:block;">
         <p class="num">06</p>
         <h3>Fireplace Tile</h3>
         <p>A tiled fireplace becomes the room's anchor. We handle layout, heat-safe materials and crisp edges for a refined focal point.</p>
-      </div>
-      <div class="service">
+      </a>
+      <a href="/services/mitered-finishes" class="service service-link" style="text-decoration:none;color:inherit;display:block;">
         <p class="num">07</p>
         <h3>45&deg; Mitered Finishes</h3>
         <p>Premium 45-degree tile cuts and mitered edges that create clean corners, seamless steps and a custom, high-end look.</p>
-      </div>
-      <div class="service">
+      </a>
+      <a href="/services/home-repairs" class="service service-link" style="text-decoration:none;color:inherit;display:block;">
         <p class="num">08</p>
         <h3>Home Repairs</h3>
         <p>Thoughtful repairs and improvements that bring older rooms back to life without cutting corners on quality or finish.</p>
-      </div>
-      <div class="service">
+      </a>
+      <a href="/services/appliance-installation" class="service service-link" style="text-decoration:none;color:inherit;display:block;">
         <p class="num">09</p>
         <h3>Appliance Installation</h3>
         <p>Professional installation support for appliances during your renovation, ensuring everything fits, sits level and functions safely.</p>
-      </div>
+      </a>
     </div>
   </div>
 </section>
@@ -252,15 +252,15 @@ export default function Home() {
   return (
     <div>
       <div dangerouslySetInnerHTML={{ __html: html1 }} />
-      <WorkSection category="Residential" eyebrow="Residential" fallback={fallbackResidential} />
+      <WorkSection category="Residential" eyebrow="Residential" fallback={fallbackResidential} limit={3} />
       <div dangerouslySetInnerHTML={{ __html: html2 }} />
-      <WorkSection category="Tile & Flooring" eyebrow="Tile & Flooring" fallback={fallbackTiles} />
+      <WorkSection category="Tile & Flooring" eyebrow="Tile & Flooring" fallback={fallbackTiles} limit={3} />
       <div dangerouslySetInnerHTML={{ __html: html3 }} />
-      <WorkSection category="Bathroom" eyebrow="Bathrooms" fallback={fallbackBathrooms} />
+      <WorkSection category="Bathroom" eyebrow="Bathrooms" fallback={fallbackBathrooms} limit={3} />
       <div dangerouslySetInnerHTML={{ __html: html4 }} />
-      <WorkSection category="Shower" eyebrow="Showers" fallback={fallbackShowers} />
+      <WorkSection category="Shower" eyebrow="Showers" fallback={fallbackShowers} limit={3} />
       <div dangerouslySetInnerHTML={{ __html: html5 }} />
-      <WorkSection category="Kitchen" eyebrow="Kitchens" fallback={fallbackKitchens} />
+      <WorkSection category="Kitchen" eyebrow="Kitchens" fallback={fallbackKitchens} limit={3} />
       <div dangerouslySetInnerHTML={{ __html: html6 }} />
     </div>
   );
