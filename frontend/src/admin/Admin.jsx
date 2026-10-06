@@ -1728,19 +1728,15 @@ function ServiceImages() {
 
   const removeImage = async (src) => {
     if (!selected) return;
-    if (!await confirm({ title: 'Remove image', message: 'This hides the image from the service page gallery.', danger: true, confirmText: 'Remove' })) return;
+    if (!await confirm({ title: 'Delete image', message: 'This permanently deletes the image from the service page gallery.', danger: true, confirmText: 'Delete' })) return;
     const m = managed[selected.slug] || { added: [], removed: [] };
+    const base = Array.isArray(m.images) ? m.images : selected.images;
+    const images = base.filter((i) => i !== src);
     const added = (m.added || []).filter((a) => a !== src);
-    const removed = [...new Set([...(m.removed || []), src])];
-    await persist({ ...managed, [selected.slug]: { added, removed } });
-    toast('Image removed from service page', 'success');
-  };
-
-  const restoreImage = async (src) => {
-    const m = managed[selected.slug] || { added: [], removed: [] };
-    const removed = (m.removed || []).filter((r) => r !== src);
-    await persist({ ...managed, [selected.slug]: { ...m, removed } });
-    toast('Image restored', 'success');
+    // Images pulled from linked projects can't be deleted from here — hide them instead
+    const removed = base.includes(src) ? (m.removed || []) : [...new Set([...(m.removed || []), src])];
+    await persist({ ...managed, [selected.slug]: { ...m, images, added, removed } });
+    toast('Image deleted', 'success');
   };
 
   const upload = async (file) => {
@@ -1792,7 +1788,7 @@ function ServiceImages() {
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: '1rem' }}>{svc.num} · {svc.title}</div>
-                    <div className="adm-muted">{g.images.length} image{g.images.length !== 1 ? 's' : ''}{g.addedCount > 0 ? ` · ${g.addedCount} added` : ''}{g.removed.length > 0 ? ` · ${g.removed.length} hidden` : ''}</div>
+                    <div className="adm-muted">{g.images.length} image{g.images.length !== 1 ? 's' : ''}{g.addedCount > 0 ? ` · ${g.addedCount} added` : ''}</div>
                   </div>
                   <span style={{ color: 'var(--muted)' }}>→</span>
                 </div>
@@ -1814,11 +1810,11 @@ function ServiceImages() {
                   Hero: <img src={g.hero} alt="" style={{ width: 32, height: 32, borderRadius: 5, objectFit: 'cover', border: '1px solid var(--border)' }} />
                 </span>
               )}
-              <span className="adm-muted">{g.images.length} visible · {g.removed.length} hidden</span>
+              <span className="adm-muted">{g.images.length} images</span>
               <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => { setAddUrl(''); setAddOpen(true); }}>+ Add Image</button>
             </div>
             <div className="adm-panel-body">
-              {g.images.length === 0 && g.removed.length === 0 ? (
+              {g.images.length === 0 ? (
                 <Empty icon="▦" title="No images" sub="Add images to show them on this service page." />
               ) : (
                 <div className="adm-media-grid">
@@ -1833,18 +1829,7 @@ function ServiceImages() {
                       </div>
                       <div className="adm-media-actions">
                         {src !== g.hero && <button onClick={() => setHero(src)}>Set hero</button>}
-                        <button className="danger" onClick={() => removeImage(src)}>Remove</button>
-                      </div>
-                    </div>
-                  ))}
-                  {g.removed.map((src, i) => (
-                    <div key={`r-${src}-${i}`} className="adm-media-card" style={{ opacity: .55 }}>
-                      <div className="adm-media-img"><img src={src} alt="" loading="lazy" onError={(e) => { e.target.style.opacity = .3; }} /></div>
-                      <div className="adm-media-info">
-                        <div className="adm-media-meta">Hidden</div>
-                      </div>
-                      <div className="adm-media-actions">
-                        <button onClick={() => restoreImage(src)}>Restore</button>
+                        <button className="danger" onClick={() => removeImage(src)}>Delete</button>
                       </div>
                     </div>
                   ))}
