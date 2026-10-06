@@ -265,7 +265,7 @@
 .adm-modal-foot { padding: 1rem 1.4rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: .5rem; }
 
 /* ---------- Toast ---------- */
-.adm-toast-wrap { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200; display: flex; flex-direction: column; gap: .5rem; }
+.adm-toast-wrap { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200; display: flex; flex-direction: column; gap: .5rem; min-height: 0; background: none; }
 .adm-toast { background: var(--text); color: #fff; padding: .7rem 1.1rem; border-radius: var(--radius-sm); font-size: .85rem; box-shadow: var(--shadow-md); animation: admSlideIn .2s ease; display: flex; align-items: center; gap: .5rem; }
 .adm-toast.error { background: var(--danger); }
 .adm-toast.success { background: var(--success); }

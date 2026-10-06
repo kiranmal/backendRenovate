@@ -14,7 +14,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastCtx.Provider value={push}>
       {children}
-      <div className="adm-toast-wrap">
+      <div className="adm adm-toast-wrap">
         {toasts.map((t) => (
           <div key={t.id} className={`adm-toast ${t.type}`}>{t.message}</div>
         ))}
@@ -37,7 +37,7 @@ export function ConfirmProvider({ children }) {
     <ConfirmCtx.Provider value={confirm}>
       {children}
       {state && (
-        <div className="adm-modal-bg" onClick={() => close(false)}>
+        <div className="adm adm-modal-bg" onClick={() => close(false)}>
           <div className="adm-modal" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
             <div className="adm-modal-head">
               <h3>{state.title || 'Confirm'}</h3>
@@ -63,7 +63,7 @@ export function ConfirmProvider({ children }) {
 export function Modal({ open, onClose, title, children, footer, size }) {
   if (!open) return null;
   return (
-    <div className="adm-modal-bg" onClick={onClose}>
+    <div className="adm adm-modal-bg" onClick={onClose}>
       <div className={`adm-modal ${size === 'lg' ? 'lg' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="adm-modal-head">
           <h3>{title}</h3>
