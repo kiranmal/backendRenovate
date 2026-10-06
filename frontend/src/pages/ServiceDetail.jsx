@@ -57,10 +57,6 @@ export default function ServiceDetail() {
           <p className="eyebrow">Service {service.num}</p>
           <h1>{service.title}</h1>
           <p>{service.intro}</p>
-          <div className="actions">
-            <a href="/contact" className="btn-primary">Start a Project <span style={{ fontSize: '1.1rem' }}>→</span></a>
-            <a href="/services" className="btn-outline">All Services</a>
-          </div>
         </div>
       </section>
 
