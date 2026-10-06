@@ -88,6 +88,7 @@ function seed() {
   if (!fs.existsSync(fileFor('seo'))) writeObj('seo', {});
   if (!fs.existsSync(fileFor('image-overrides'))) writeObj('image-overrides', {});
   if (!fs.existsSync(fileFor('image-extras'))) writeObj('image-extras', {});
+  if (!fs.existsSync(fileFor('service-images'))) writeObj('service-images', {});
 }
 seed();
 
@@ -121,6 +122,9 @@ app.get('/api/content/image-overrides', (req, res) => {
 });
 app.get('/api/content/image-extras', (req, res) => {
   res.json({ success: true, data: readObj('image-extras') });
+});
+app.get('/api/content/service-images', (req, res) => {
+  res.json({ success: true, data: readObj('service-images') });
 });
 app.get('/api/content/:collection', (req, res) => {
   const allowed = ['services', 'projects', 'testimonials', 'settings', 'seo'];
@@ -353,6 +357,17 @@ app.put('/api/admin/image-extras', requireAdmin, (req, res) => {
   const next = { ...(req.body || {}) };
   writeObj('image-extras', next);
   logActivity('image_extras_updated');
+  res.json({ success: true, data: next });
+});
+
+/* ---------- service page images — admin add/remove per service ---------- */
+app.get('/api/admin/service-images', requireAdmin, (req, res) => {
+  res.json({ success: true, data: readObj('service-images') });
+});
+app.put('/api/admin/service-images', requireAdmin, (req, res) => {
+  const next = { ...(req.body || {}) };
+  writeObj('service-images', next);
+  logActivity('service_images_updated');
   res.json({ success: true, data: next });
 });
 

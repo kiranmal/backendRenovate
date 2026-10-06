@@ -5,6 +5,7 @@ import { ToastProvider, ConfirmProvider, useToast, useConfirm, Modal, Badge, Fie
 import { IMAGE_USAGE, EXTERNAL_IMAGES, getUsage, isUsed } from './imageUsage.js';
 import { WEBSITE_IMAGE_MAP, getAllMappedImages, findUsages } from './websiteImageMap.js';
 import { FRONTEND_SERVICES, FRONTEND_PROJECTS, FRONTEND_GALLERY, FRONTEND_TESTIMONIALS, mergeServices, mergeProjects, mergeTestimonials, getAllGalleryImages, getGalleryByCategory, getGalleryByPage } from './frontendData.js';
+import { SERVICES as SERVICE_PAGES } from '../data/servicesData.js';
 
 window.__ADM_API__ = API;
 const API_ORIGIN = API.replace(/\/api$/, '');
@@ -54,6 +55,7 @@ const NAV = [
   ]},
   { group: 'Content', items: [
     { id: 'website-images', label: 'Website Images', icon: '▦' },
+    { id: 'service-images', label: 'Service Images', icon: '▤' },
     { id: 'services', label: 'Services', icon: '⚙' },
     { id: 'projects', label: 'Projects', icon: '▣' },
     { id: 'testimonials', label: 'Testimonials', icon: '✦' },
@@ -1667,6 +1669,202 @@ function Users() {
 }
 
 /* ============================================================
+   SERVICE PAGE IMAGES — add/remove gallery images per service page
+   ============================================================ */
+function ServiceImages() {
+  const api = useApi();
+  const toast = useToast();
+  const confirm = useConfirm();
+  const [selected, setSelected] = useState(null);
+  const [managed, setManaged] = useState({});
+  const [search, setSearch] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addUrl, setAddUrl] = useState('');
+  const [projects, setProjects] = useState([]);
+  const uploadRef = useRef(null);
+  const API = (window.__ADM_API__ || '').replace(/\/api$/, '');
+  const token = localStorage.getItem('admin_token');
+
+  useEffect(() => {
+    api('/admin/service-images').then((d) => { if (d.success) setManaged(d.data || {}); });
+    api('/admin/projects').then((d) => { if (d.success) setProjects(d.data || []); });
+  }, []);
+
+  const persist = async (next) => {
+    await api('/admin/service-images', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
+    setManaged(next);
+  };
+
+  const getGallery = (svc) => {
+    const m = managed[svc.slug] || { added: [], removed: [] };
+    const removed = new Set(m.removed || []);
+    const apiImgs = projects.filter((p) => svc.categories.some((c) => (p.category || '').toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes((p.category || '').toLowerCase()))).map((p) => p.image).filter(Boolean);
+    return {
+      images: [...new Set([...apiImgs, ...svc.images, ...(m.added || [])])].filter((i) => !removed.has(i)),
+      removed: m.removed || [],
+      addedCount: (m.added || []).length,
+    };
+  };
+
+  const addImage = async (src) => {
+    if (!src || !selected) return;
+    const m = managed[selected.slug] || { added: [], removed: [] };
+    // If it was previously removed, un-remove instead
+    const removed = (m.removed || []).filter((r) => r !== src);
+    const added = [...(m.added || []), src].filter((v, i, a) => a.indexOf(v) === i);
+    await persist({ ...managed, [selected.slug]: { added, removed } });
+    toast('Image added to service page', 'success');
+  };
+
+  const removeImage = async (src) => {
+    if (!selected) return;
+    if (!await confirm({ title: 'Remove image', message: 'This hides the image from the service page gallery.', danger: true, confirmText: 'Remove' })) return;
+    const m = managed[selected.slug] || { added: [], removed: [] };
+    const added = (m.added || []).filter((a) => a !== src);
+    const removed = [...new Set([...(m.removed || []), src])];
+    await persist({ ...managed, [selected.slug]: { added, removed } });
+    toast('Image removed from service page', 'success');
+  };
+
+  const restoreImage = async (src) => {
+    const m = managed[selected.slug] || { added: [], removed: [] };
+    const removed = (m.removed || []).filter((r) => r !== src);
+    await persist({ ...managed, [selected.slug]: { ...m, removed } });
+    toast('Image restored', 'success');
+  };
+
+  const upload = async (file) => {
+    if (!file) return;
+    setUploading(true);
+    const fd = new FormData(); fd.append('image', file);
+    try {
+      const res = await fetch(`${window.__ADM_API__}/admin/images`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+      const data = await res.json();
+      if (data.success) { await addImage(`${API}${data.image.url}`); setAddOpen(false); setAddUrl(''); }
+      else toast('Upload failed', 'error');
+    } catch { toast('Upload failed', 'error'); }
+    setUploading(false);
+  };
+
+  const filtered = SERVICE_PAGES.filter((s) => s.title.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <>
+      <div className="adm-page-head">
+        <div><h1>Service Page Images</h1><p>Manage the photo gallery on each service detail page</p></div>
+        <div className="adm-page-actions"><span className="adm-chip">{SERVICE_PAGES.length} service pages</span></div>
+      </div>
+
+      <div className="adm-toolbar">
+        <div className="adm-search">
+          <span className="adm-search-ico">⌕</span>
+          <input placeholder="Search services…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        {selected && <button className="adm-btn adm-btn-sm" onClick={() => setSelected(null)}>← All services</button>}
+      </div>
+
+      {selected && (
+        <div style={{ marginBottom: '1rem', fontSize: '.85rem', color: 'var(--muted)' }}>
+          <button className="adm-link" onClick={() => setSelected(null)}>Service Images</button> › <b style={{ color: 'var(--text)' }}>{selected.title}</b>
+        </div>
+      )}
+
+      {/* LEVEL 1: service list */}
+      {!selected && (
+        <div className="adm-grid-2">
+          {filtered.map((svc) => {
+            const g = getGallery(svc);
+            return (
+              <div key={svc.slug} className="adm-panel" style={{ cursor: 'pointer' }} onClick={() => setSelected(svc)}>
+                <div className="adm-panel-body" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', flexShrink: 0 }}>
+                    <img src={svc.hero} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: '1rem' }}>{svc.num} · {svc.title}</div>
+                    <div className="adm-muted">{g.images.length} image{g.images.length !== 1 ? 's' : ''}{g.addedCount > 0 ? ` · ${g.addedCount} added` : ''}{g.removed.length > 0 ? ` · ${g.removed.length} hidden` : ''}</div>
+                  </div>
+                  <span style={{ color: 'var(--muted)' }}>→</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* LEVEL 2: images of selected service */}
+      {selected && (() => {
+        const g = getGallery(selected);
+        return (
+          <div className="adm-panel">
+            <div className="adm-panel-head">
+              <h3>{selected.title}</h3>
+              <span className="adm-muted">{g.images.length} visible · {g.removed.length} hidden</span>
+              <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => { setAddUrl(''); setAddOpen(true); }}>+ Add Image</button>
+            </div>
+            <div className="adm-panel-body">
+              {g.images.length === 0 && g.removed.length === 0 ? (
+                <Empty icon="▦" title="No images" sub="Add images to show them on this service page." />
+              ) : (
+                <div className="adm-media-grid">
+                  {g.images.map((src, i) => (
+                    <div key={src + i} className="adm-media-card">
+                      <div className="adm-media-img"><img src={src} alt="" loading="lazy" onError={(e) => { e.target.style.opacity = .3; }} /></div>
+                      <div className="adm-media-info">
+                        <div className="adm-media-meta" style={{ wordBreak: 'break-all' }}>{src.replace(API, '').split('/').pop()}</div>
+                      </div>
+                      <div className="adm-media-actions">
+                        <button className="danger" onClick={() => removeImage(src)}>Remove</button>
+                      </div>
+                    </div>
+                  ))}
+                  {g.removed.map((src, i) => (
+                    <div key={`r-${src}-${i}`} className="adm-media-card" style={{ opacity: .55 }}>
+                      <div className="adm-media-img"><img src={src} alt="" loading="lazy" onError={(e) => { e.target.style.opacity = .3; }} /></div>
+                      <div className="adm-media-info">
+                        <div className="adm-media-meta">Hidden</div>
+                      </div>
+                      <div className="adm-media-actions">
+                        <button onClick={() => restoreImage(src)}>Restore</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Add image modal */}
+      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Image to Service"
+        footer={addOpen && (
+          <>
+            <button className="adm-btn" onClick={() => setAddOpen(false)}>Cancel</button>
+            <button className="adm-btn adm-btn-primary" onClick={async () => { await addImage(addUrl.trim()); setAddOpen(false); setAddUrl(''); }} disabled={!addUrl.trim()}>Add to Page</button>
+          </>
+        )}>
+        {addOpen && (
+          <div>
+            <div style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: '4/3', background: 'var(--surface-2)', marginBottom: '1rem', maxWidth: 320 }}>
+              {addUrl ? <img src={addUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.opacity = .3; }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>No image</div>}
+            </div>
+            <Field label="Image" required hint="Upload from your computer or paste an image URL.">
+              <div style={{ display: 'flex', gap: '.5rem' }}>
+                <Input value={addUrl} onChange={(e) => setAddUrl(e.target.value)} placeholder="https://… or /uploads/…" style={{ flex: 1 }} />
+                <button type="button" className="adm-btn" onClick={() => uploadRef.current?.click()} disabled={uploading}>{uploading ? 'Uploading…' : 'Upload'}</button>
+              </div>
+            </Field>
+            <input ref={uploadRef} type="file" accept="image/*" hidden onChange={(e) => { upload(e.target.files[0]); e.target.value = ''; }} />
+          </div>
+        )}
+      </Modal>
+    </>
+  );
+}
+
+/* ============================================================
    ROOT
    ============================================================ */
 export default function Admin() {
@@ -1681,7 +1879,7 @@ export default function Admin() {
     </ConfirmProvider></ToastProvider>
   );
 
-  const pages = { dashboard: Dashboard, enquiries: Enquiries, 'website-images': WebsiteImages, services: Services, projects: Projects, testimonials: Testimonials, gallery: Gallery, settings: Settings, activity: Activity, users: Users };
+  const pages = { dashboard: Dashboard, enquiries: Enquiries, 'website-images': WebsiteImages, 'service-images': ServiceImages, services: Services, projects: Projects, testimonials: Testimonials, gallery: Gallery, settings: Settings, activity: Activity, users: Users };
   const Page = pages[view] || Dashboard;
 
   return (

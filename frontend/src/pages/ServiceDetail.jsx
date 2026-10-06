@@ -1,13 +1,22 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { useContent, imageUrl } from '../hooks/useContent.js';
 import { getService, SERVICES } from '../data/servicesData.js';
+import API from '../config.js';
 import './ServiceDetail.css';
 
 export default function ServiceDetail() {
   const { slug } = useParams();
   const service = getService(slug);
   const { data: projects, loading } = useContent('projects');
+  const [managed, setManaged] = useState({});
+
+  useEffect(() => {
+    fetch(`${API}/content/service-images`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setManaged(d.data || {}); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -22,7 +31,7 @@ export default function ServiceDetail() {
     }, { threshold: 0.1 });
     reveals.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, [slug, projects, loading]);
+  }, [slug, projects, loading, managed]);
 
   if (!service) return <Navigate to="/services" replace />;
 
@@ -32,9 +41,11 @@ export default function ServiceDetail() {
     return service.categories.some((c) => cat.includes(c.toLowerCase()) || c.toLowerCase().includes(cat));
   });
 
-  // Merge: API project images first, then service's own images (dedup)
+  // Gallery = API project images + static service images + admin-added − admin-removed
+  const m = managed[service.slug] || { added: [], removed: [] };
   const apiImages = apiProjects.map((p) => p.image).filter(Boolean);
-  const gallery = [...new Set([...apiImages, ...service.images])];
+  const removed = new Set(m.removed || []);
+  const gallery = [...new Set([...apiImages, ...service.images, ...(m.added || [])])].filter((img) => !removed.has(img));
   const next = SERVICES[(SERVICES.indexOf(service) + 1) % SERVICES.length];
 
   return (
