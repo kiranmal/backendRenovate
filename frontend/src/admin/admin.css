@@ -295,6 +295,9 @@
 .adm-media-info { padding: .6rem .75rem; }
 .adm-media-name { font-size: .76rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .adm-media-meta { font-size: .72rem; color: var(--muted); margin-top: .15rem; }
+.adm-media-check { position: absolute; top: 6px; right: 6px; z-index: 2; background: rgba(255,255,255,.9); border-radius: 4px; padding: 2px; display: flex; }
+.adm-media-check input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
+.adm-media-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 .adm-media-actions { display: flex; gap: .3rem; padding: 0 .6rem .6rem; }
 .adm-media-actions button, .adm-media-actions a { flex: 1; padding: .3rem; font-size: .7rem; border: 1px solid var(--border); border-radius: 5px; background: var(--surface); color: var(--text-2); cursor: pointer; text-align: center; text-decoration: none; }
 .adm-media-actions button:hover, .adm-media-actions a:hover { border-color: var(--accent); color: var(--accent); }
