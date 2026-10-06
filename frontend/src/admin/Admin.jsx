@@ -1699,12 +1699,21 @@ function ServiceImages() {
   const getGallery = (svc) => {
     const m = managed[svc.slug] || { added: [], removed: [] };
     const removed = new Set(m.removed || []);
+    const base = Array.isArray(m.images) ? m.images : svc.images;
     const apiImgs = projects.filter((p) => svc.categories.some((c) => (p.category || '').toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes((p.category || '').toLowerCase()))).map((p) => p.image).filter(Boolean);
     return {
-      images: [...new Set([...apiImgs, ...svc.images, ...(m.added || [])])].filter((i) => !removed.has(i)),
+      hero: m.hero || svc.hero,
+      images: [...new Set([...apiImgs, ...base, ...(m.added || [])])].filter((i) => !removed.has(i)),
       removed: m.removed || [],
       addedCount: (m.added || []).length,
     };
+  };
+
+  const setHero = async (src) => {
+    if (!selected) return;
+    const m = managed[selected.slug] || { added: [], removed: [] };
+    await persist({ ...managed, [selected.slug]: { ...m, hero: src } });
+    toast('Hero image updated', 'success');
   };
 
   const addImage = async (src) => {
@@ -1779,7 +1788,7 @@ function ServiceImages() {
               <div key={svc.slug} className="adm-panel" style={{ cursor: 'pointer' }} onClick={() => setSelected(svc)}>
                 <div className="adm-panel-body" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ width: 48, height: 48, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', flexShrink: 0 }}>
-                    <img src={svc.hero} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={g.hero} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: '1rem' }}>{svc.num} · {svc.title}</div>
@@ -1800,6 +1809,11 @@ function ServiceImages() {
           <div className="adm-panel">
             <div className="adm-panel-head">
               <h3>{selected.title}</h3>
+              {g.hero && (
+                <span className="adm-muted" style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>
+                  Hero: <img src={g.hero} alt="" style={{ width: 32, height: 32, borderRadius: 5, objectFit: 'cover', border: '1px solid var(--border)' }} />
+                </span>
+              )}
               <span className="adm-muted">{g.images.length} visible · {g.removed.length} hidden</span>
               <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => { setAddUrl(''); setAddOpen(true); }}>+ Add Image</button>
             </div>
@@ -1810,11 +1824,15 @@ function ServiceImages() {
                 <div className="adm-media-grid">
                   {g.images.map((src, i) => (
                     <div key={src + i} className="adm-media-card">
-                      <div className="adm-media-img"><img src={src} alt="" loading="lazy" onError={(e) => { e.target.style.opacity = .3; }} /></div>
+                      <div className="adm-media-img">
+                        <img src={src} alt="" loading="lazy" onError={(e) => { e.target.style.opacity = .3; }} />
+                        {src === g.hero && <span style={{ position: 'absolute', top: 6, left: 6, fontSize: '.62rem', fontWeight: 600, padding: '.15rem .4rem', borderRadius: 4, background: 'var(--info-soft)', color: 'var(--info)' }}>Hero</span>}
+                      </div>
                       <div className="adm-media-info">
                         <div className="adm-media-meta" style={{ wordBreak: 'break-all' }}>{src.replace(API, '').split('/').pop()}</div>
                       </div>
                       <div className="adm-media-actions">
+                        {src !== g.hero && <button onClick={() => setHero(src)}>Set hero</button>}
                         <button className="danger" onClick={() => removeImage(src)}>Remove</button>
                       </div>
                     </div>

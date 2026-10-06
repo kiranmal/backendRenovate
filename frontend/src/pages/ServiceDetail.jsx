@@ -41,16 +41,18 @@ export default function ServiceDetail() {
     return service.categories.some((c) => cat.includes(c.toLowerCase()) || c.toLowerCase().includes(cat));
   });
 
-  // Gallery = API project images + static service images + admin-added − admin-removed
-  const m = managed[service.slug] || { added: [], removed: [] };
+  // Gallery = API project images + DB-stored service images + admin-added − admin-removed
+  const m = managed[service.slug] || {};
+  const baseImages = Array.isArray(m.images) ? m.images : service.images;
+  const hero = m.hero || service.hero;
   const apiImages = apiProjects.map((p) => p.image).filter(Boolean);
   const removed = new Set(m.removed || []);
-  const gallery = [...new Set([...apiImages, ...service.images, ...(m.added || [])])].filter((img) => !removed.has(img));
+  const gallery = [...new Set([...apiImages, ...baseImages, ...(m.added || [])])].filter((img) => !removed.has(img));
   const next = SERVICES[(SERVICES.indexOf(service) + 1) % SERVICES.length];
 
   return (
     <div className="sd-page">
-      <section className="sd-hero" style={{ backgroundImage: `url('${service.hero}')` }}>
+      <section className="sd-hero" style={{ backgroundImage: `url('${imageUrl(hero)}')` }}>
         <div className="sd-hero-inner sd-reveal">
           <p className="eyebrow">Service {service.num}</p>
           <h1>{service.title}</h1>

@@ -1,0 +1,38 @@
+{
+  "tile-flooring": {
+    "hero": "/images/IMG_0383.jpg",
+    "images": ["/images/IMG_9389.jpg", "/images/IMG_9415.jpg", "/images/IMG_9564.jpg", "/images/IMG_0609.JPG.jpeg", "/images/IMG_9381.jpg"]
+  },
+  "bathroom-upgrades": {
+    "hero": "/images/IMG_0635.JPG.jpeg",
+    "images": ["/images/IMG_0608.JPG.jpeg", "/images/IMG_0573.JPG.jpeg", "/images/IMG_8818.jpg", "/images/IMG_0578.JPG.jpeg", "/images/IMG_0634.JPG.jpeg", "/images/IMG_8820.jpg", "/images/IMG_9662.jpg", "/images/IMG_0212.jpg"]
+  },
+  "custom-showers": {
+    "hero": "/images/IMG_0618.JPG.jpeg",
+    "images": ["/images/IMG_0572.JPG.jpeg", "/images/IMG_0574.JPG.jpeg", "/images/IMG_0581.JPG.jpeg", "/images/IMG_9545.jpg", "/images/IMG_0604.jpg", "/images/IMG_9437.jpg", "/images/IMG_9543.jpg", "/images/IMG_9546.jpg"]
+  },
+  "kitchen-backsplash": {
+    "hero": "/images/IMG_0455.jpg",
+    "images": ["/images/IMG_0308.jpg", "/images/IMG_0447.jpg", "/images/IMG_0595.JPG.jpeg"]
+  },
+  "waterproofing": {
+    "hero": "/images/IMG_0618.JPG.jpeg",
+    "images": ["/images/IMG_9437.jpg", "/images/IMG_9543.jpg", "/images/IMG_9546.jpg"]
+  },
+  "fireplace-tile": {
+    "hero": "/images/IMG_9446.jpg",
+    "images": ["/images/IMG_9446.jpg", "/images/IMG_0383.jpg"]
+  },
+  "mitered-finishes": {
+    "hero": "/images/IMG_9381.jpg",
+    "images": ["/images/IMG_9381.jpg", "/images/IMG_9545.jpg", "/images/IMG_9546.jpg"]
+  },
+  "home-repairs": {
+    "hero": "/images/IMG_9687.jpg",
+    "images": ["/images/IMG_9662.jpg", "/images/IMG_0460.jpg", "/images/IMG_9687.jpg"]
+  },
+  "appliance-installation": {
+    "hero": "/images/IMG_0595.JPG.jpeg",
+    "images": ["/images/IMG_0595.JPG.jpeg", "/images/IMG_0308.jpg", "/images/IMG_0455.jpg"]
+  }
+}

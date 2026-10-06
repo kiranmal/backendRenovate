@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useContent, imageUrl } from '../hooks/useContent.js';
 import { SERVICES as SERVICE_PAGES } from '../data/servicesData.js';
+import API from '../config.js';
 import './Services.css';
 
 const slugFor = (title = '') => {
@@ -12,7 +13,15 @@ const slugFor = (title = '') => {
 
 export default function Services() {
   const { data: services, loading } = useContent('services');
+  const [svcImages, setSvcImages] = useState({});
   const pageRef = useRef(null);
+
+  useEffect(() => {
+    fetch(`${API}/content/service-images`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setSvcImages(d.data || {}); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const reveals = document.querySelectorAll('.ser-reveal');
@@ -72,18 +81,21 @@ export default function Services() {
             <div className="line"></div>
           </div>
           <div className="ser-services-grid">
-            {activeServices.map((s, i) => (
+            {activeServices.map((s, i) => {
+              const cardImage = s.image || (svcImages[slugFor(s.title)] || {}).hero;
+              return (
               <a href={`/services/${slugFor(s.title)}`} className="ser-service ser-reveal" key={s.id || i} style={{ textDecoration: 'none', color: 'inherit', display: 'block', cursor: 'pointer' }}>
-                {s.image && (
+                {cardImage && (
                   <div style={{ marginBottom: '1rem', borderRadius: '8px', overflow: 'hidden' }}>
-                    <img src={imageUrl(s.image)} alt={s.title} loading="lazy" decoding="async" style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }} />
+                    <img src={imageUrl(cardImage)} alt={s.title} loading="lazy" decoding="async" style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }} />
                   </div>
                 )}
                 <p className="num">{String(i + 1).padStart(2, '0')} — {s.icon && s.icon.length <= 3 ? s.icon : s.title}</p>
                 <h3>{s.title}</h3>
                 <p>{s.summary || s.description}</p>
               </a>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

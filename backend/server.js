@@ -89,6 +89,31 @@ function seed() {
   if (!fs.existsSync(fileFor('image-overrides'))) writeObj('image-overrides', {});
   if (!fs.existsSync(fileFor('image-extras'))) writeObj('image-extras', {});
   if (!fs.existsSync(fileFor('service-images'))) writeObj('service-images', {});
+
+  // Store every service menu page's images in the DB.
+  // Each slug gets { hero, images, added, removed } — existing admin
+  // added/removed overlays are preserved, only missing data is filled.
+  try {
+    const seedMap = JSON.parse(fs.readFileSync(path.join(__dirname, 'service-pages-seed.json'), 'utf8'));
+    const si = readObj('service-images');
+    let changed = false;
+    Object.entries(seedMap).forEach(([slug, s]) => {
+      const cur = si[slug] || {};
+      if (!Array.isArray(cur.images)) {
+        si[slug] = {
+          hero: cur.hero || s.hero || '',
+          images: s.images || [],
+          added: Array.isArray(cur.added) ? cur.added : [],
+          removed: Array.isArray(cur.removed) ? cur.removed : [],
+        };
+        changed = true;
+      } else if (!cur.hero && s.hero) {
+        cur.hero = s.hero;
+        changed = true;
+      }
+    });
+    if (changed) writeObj('service-images', si);
+  } catch { /* seed file missing — skip */ }
 }
 seed();
 
