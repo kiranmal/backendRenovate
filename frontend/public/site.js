@@ -12,10 +12,13 @@ document.addEventListener('DOMContentLoaded', function(){
   // Determine API base URL
   var API_BASE = (window.__ADM_API__ || '');
   if (!API_BASE) {
-    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    var h = location.hostname;
+    if (h === 'localhost' || h === '127.0.0.1') {
       API_BASE = 'http://localhost:5000/api';
-    } else {
+    } else if (h.endsWith('vercel.app')) {
       API_BASE = 'https://renovate-max2max-inc.onrender.com/api';
+    } else {
+      API_BASE = location.origin + '/api'; // self-hosted — same domain
     }
   }
 
