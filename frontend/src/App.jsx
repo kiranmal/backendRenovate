@@ -9,6 +9,8 @@ import Services from './pages/Services.jsx';
 import ServiceDetail from './pages/ServiceDetail.jsx';
 import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
+import PrivacyPolicy from './pages/PrivacyPolicy.jsx';
+import Terms from './pages/Terms.jsx';
 import Admin from './admin/Admin.jsx';
 
 function Layout() {
@@ -43,6 +45,8 @@ function Layout() {
         <Route path="/services/:slug" element={<ServiceDetail />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>
       {!isAdmin && <Footer />}

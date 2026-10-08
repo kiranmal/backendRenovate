@@ -49,8 +49,8 @@ export default function Footer() {
     <div class="bottom" style="margin-top:2rem; padding-top:2rem; border-top:1px solid rgba(28,26,23,.1);">
       <p>&copy; 2026 Renovate Max2Max</p>
       <div style="display:flex; gap:1.5rem;">
-        <a href="#" class="link-underline">Privacy Policy</a>
-        <a href="#" class="link-underline">Terms</a>
+        <a href="/privacy-policy" class="link-underline">Privacy Policy</a>
+        <a href="/terms" class="link-underline">Terms</a>
       </div>
     </div>
   </div>
