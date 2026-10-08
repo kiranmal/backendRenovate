@@ -1,38 +1,162 @@
 {
   "tile-flooring": {
-    "hero": "/images/IMG_0383.jpg",
-    "images": ["/images/IMG_9389.jpg", "/images/IMG_9415.jpg", "/images/IMG_9564.jpg", "/images/IMG_0609.JPG.jpeg", "/images/IMG_9381.jpg"]
+    "hero": "/images/services/tile-flooring/3.jpeg",
+    "images": [
+      "/images/services/tile-flooring/3.jpeg",
+      "/images/services/tile-flooring/6.jpeg",
+      "/images/services/tile-flooring/9.jpeg",
+      "/images/services/tile-flooring/13.jpeg",
+      "/images/services/tile-flooring/21.jpeg",
+      "/images/services/tile-flooring/25.jpeg",
+      "/images/services/tile-flooring/29.jpeg",
+      "/images/services/tile-flooring/31.jpeg",
+      "/images/services/tile-flooring/32.jpeg",
+      "/images/services/tile-flooring/33.jpeg",
+      "/images/services/tile-flooring/42.jpeg",
+      "/images/services/tile-flooring/57.jpeg",
+      "/images/services/tile-flooring/59.jpeg",
+      "/images/services/tile-flooring/60.jpeg",
+      "/images/services/tile-flooring/91.jpeg",
+      "/images/services/tile-flooring/93.jpeg"
+    ]
   },
   "bathroom-upgrades": {
-    "hero": "/images/IMG_0635.JPG.jpeg",
-    "images": ["/images/IMG_0608.JPG.jpeg", "/images/IMG_0573.JPG.jpeg", "/images/IMG_8818.jpg", "/images/IMG_0578.JPG.jpeg", "/images/IMG_0634.JPG.jpeg", "/images/IMG_8820.jpg", "/images/IMG_9662.jpg", "/images/IMG_0212.jpg"]
+    "hero": "/images/services/bathroom-upgrades/2.jpeg",
+    "images": [
+      "/images/services/bathroom-upgrades/2.jpeg",
+      "/images/services/bathroom-upgrades/4.jpeg",
+      "/images/services/bathroom-upgrades/12.jpeg",
+      "/images/services/bathroom-upgrades/16.jpeg",
+      "/images/services/bathroom-upgrades/17.jpeg",
+      "/images/services/bathroom-upgrades/18.jpeg",
+      "/images/services/bathroom-upgrades/23.jpeg",
+      "/images/services/bathroom-upgrades/34.jpeg",
+      "/images/services/bathroom-upgrades/39.jpeg",
+      "/images/services/bathroom-upgrades/40.jpeg",
+      "/images/services/bathroom-upgrades/45.jpeg",
+      "/images/services/bathroom-upgrades/49.jpeg",
+      "/images/services/bathroom-upgrades/52.jpeg",
+      "/images/services/bathroom-upgrades/54.jpeg",
+      "/images/services/bathroom-upgrades/55.jpeg",
+      "/images/services/bathroom-upgrades/61.jpeg",
+      "/images/services/bathroom-upgrades/63.jpeg",
+      "/images/services/bathroom-upgrades/72.jpeg"
+    ]
   },
   "custom-showers": {
-    "hero": "/images/IMG_0618.JPG.jpeg",
-    "images": ["/images/IMG_0572.JPG.jpeg", "/images/IMG_0574.JPG.jpeg", "/images/IMG_0581.JPG.jpeg", "/images/IMG_9545.jpg", "/images/IMG_0604.jpg", "/images/IMG_9437.jpg", "/images/IMG_9543.jpg", "/images/IMG_9546.jpg"]
+    "hero": "/images/services/custom-showers/1.jpeg",
+    "images": [
+      "/images/services/custom-showers/1.jpeg",
+      "/images/services/custom-showers/8.jpeg",
+      "/images/services/custom-showers/10.jpeg",
+      "/images/services/custom-showers/15.jpeg",
+      "/images/services/custom-showers/34.jpeg",
+      "/images/services/custom-showers/37.jpeg",
+      "/images/services/custom-showers/39.jpeg",
+      "/images/services/custom-showers/40.jpeg",
+      "/images/services/custom-showers/41.jpeg",
+      "/images/services/custom-showers/47.jpeg",
+      "/images/services/custom-showers/51.jpeg",
+      "/images/services/custom-showers/62.jpeg",
+      "/images/services/custom-showers/64.jpeg",
+      "/images/services/custom-showers/67.jpeg",
+      "/images/services/custom-showers/68.jpeg",
+      "/images/services/custom-showers/69.jpeg",
+      "/images/services/custom-showers/73.jpeg",
+      "/images/services/custom-showers/74.jpeg",
+      "/images/services/custom-showers/80.jpeg",
+      "/images/services/custom-showers/89.jpeg"
+    ]
   },
   "kitchen-backsplash": {
-    "hero": "/images/IMG_0455.jpg",
-    "images": ["/images/IMG_0308.jpg", "/images/IMG_0447.jpg", "/images/IMG_0595.JPG.jpeg"]
+    "hero": "/images/services/kitchen-backsplash/27.jpeg",
+    "images": [
+      "/images/services/kitchen-backsplash/27.jpeg",
+      "/images/services/kitchen-backsplash/28.jpeg",
+      "/images/services/kitchen-backsplash/30.jpeg",
+      "/images/services/kitchen-backsplash/43.jpeg",
+      "/images/services/kitchen-backsplash/44.jpeg",
+      "/images/services/kitchen-backsplash/46.jpeg",
+      "/images/services/kitchen-backsplash/59.jpeg",
+      "/images/services/kitchen-backsplash/75.jpeg",
+      "/images/services/kitchen-backsplash/76.jpeg",
+      "/images/services/kitchen-backsplash/81.jpeg",
+      "/images/services/kitchen-backsplash/82.jpeg",
+      "/images/services/kitchen-backsplash/83.jpeg",
+      "/images/services/kitchen-backsplash/92.jpeg",
+      "/images/services/kitchen-backsplash/95.jpeg",
+      "/images/services/kitchen-backsplash/96.jpeg"
+    ]
   },
   "waterproofing": {
-    "hero": "/images/IMG_0618.JPG.jpeg",
-    "images": ["/images/IMG_9437.jpg", "/images/IMG_9543.jpg", "/images/IMG_9546.jpg"]
+    "hero": "/images/services/waterproofing/34.jpeg",
+    "images": [
+      "/images/services/waterproofing/34.jpeg",
+      "/images/services/waterproofing/36.jpeg",
+      "/images/services/waterproofing/38.jpeg",
+      "/images/services/waterproofing/39.jpeg",
+      "/images/services/waterproofing/40.jpeg",
+      "/images/services/waterproofing/41.jpeg",
+      "/images/services/waterproofing/47.jpeg",
+      "/images/services/waterproofing/54.jpeg",
+      "/images/services/waterproofing/62.jpeg",
+      "/images/services/waterproofing/63.jpeg",
+      "/images/services/waterproofing/64.jpeg",
+      "/images/services/waterproofing/65.jpeg",
+      "/images/services/waterproofing/73.jpeg",
+      "/images/services/waterproofing/78.jpeg",
+      "/images/services/waterproofing/80.jpeg",
+      "/images/services/waterproofing/89.jpeg"
+    ]
   },
   "fireplace-tile": {
-    "hero": "/images/IMG_9446.jpg",
-    "images": ["/images/IMG_9446.jpg", "/images/IMG_0383.jpg"]
+    "hero": "/images/services/fireplace-tile/24.jpeg",
+    "images": [
+      "/images/services/fireplace-tile/24.jpeg"
+    ]
   },
   "mitered-finishes": {
-    "hero": "/images/IMG_9381.jpg",
-    "images": ["/images/IMG_9381.jpg", "/images/IMG_9545.jpg", "/images/IMG_9546.jpg"]
+    "hero": "/images/services/mitered-finishes/7.jpeg",
+    "images": [
+      "/images/services/mitered-finishes/7.jpeg",
+      "/images/services/mitered-finishes/14.jpeg",
+      "/images/services/mitered-finishes/20.jpeg",
+      "/images/services/mitered-finishes/56.jpeg",
+      "/images/services/mitered-finishes/66.jpeg",
+      "/images/services/mitered-finishes/78.jpeg"
+    ]
   },
   "home-repairs": {
-    "hero": "/images/IMG_9687.jpg",
-    "images": ["/images/IMG_9662.jpg", "/images/IMG_0460.jpg", "/images/IMG_9687.jpg"]
+    "hero": "/images/services/home-repairs/6.jpeg",
+    "images": [
+      "/images/services/home-repairs/6.jpeg",
+      "/images/services/home-repairs/22.jpeg",
+      "/images/services/home-repairs/25.jpeg",
+      "/images/services/home-repairs/29.jpeg",
+      "/images/services/home-repairs/31.jpeg",
+      "/images/services/home-repairs/32.jpeg",
+      "/images/services/home-repairs/33.jpeg",
+      "/images/services/home-repairs/35.jpeg",
+      "/images/services/home-repairs/77.jpeg",
+      "/images/services/home-repairs/85.jpeg",
+      "/images/services/home-repairs/86.jpeg",
+      "/images/services/home-repairs/87.jpeg",
+      "/images/services/home-repairs/88.jpeg",
+      "/images/services/home-repairs/90.jpeg",
+      "/images/services/home-repairs/91.jpeg",
+      "/images/services/home-repairs/93.jpeg"
+    ]
   },
   "appliance-installation": {
-    "hero": "/images/IMG_0595.JPG.jpeg",
-    "images": ["/images/IMG_0595.JPG.jpeg", "/images/IMG_0308.jpg", "/images/IMG_0455.jpg"]
+    "hero": "/images/services/appliance-installation/75.jpeg",
+    "images": [
+      "/images/services/appliance-installation/75.jpeg",
+      "/images/services/appliance-installation/76.jpeg",
+      "/images/services/appliance-installation/79.jpeg",
+      "/images/services/appliance-installation/81.jpeg",
+      "/images/services/appliance-installation/82.jpeg",
+      "/images/services/appliance-installation/83.jpeg",
+      "/images/services/appliance-installation/84.jpeg"
+    ]
   }
 }
