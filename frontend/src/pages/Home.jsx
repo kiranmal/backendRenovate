@@ -94,6 +94,7 @@ export default function Home() {
     <p class="eyebrow">Residential</p>
     <h2>Residential</h2>
     <p>Where life unfolds. We approach each home with the belief that finishes should be both beautiful and livable — custom showers that feel like a retreat, backsplashes that catch the morning light, and floors that carry a family through every season.</p>
+    <a href="#work-residential" class="cat-btn">View Our Work <span style="font-size:1rem;">→</span></a>
   </div>
 </section>
   `;
@@ -104,6 +105,7 @@ export default function Home() {
     <p class="eyebrow">Tile &amp; Flooring</p>
     <h2>Tiles</h2>
     <p>Every floor, wall and backsplash starts with the right tile. We install porcelain, ceramic and stone tiles with clean grout lines, level surfaces and finishes that feel solid and look refined for years.</p>
+    <a href="#work-tile-&amp;-flooring" class="cat-btn">View Our Work <span style="font-size:1rem;">→</span></a>
   </div>
 </section>
   `;
@@ -114,6 +116,7 @@ export default function Home() {
     <p class="eyebrow">Bathrooms</p>
     <h2>Bathrooms</h2>
     <p>A bathroom should feel like a sanctuary and function like a machine. We build complete bathrooms with precise waterproofing, tile walls, floors and fixtures so the space stays beautiful through years of daily use.</p>
+    <a href="#work-bathroom" class="cat-btn">View Our Work <span style="font-size:1rem;">→</span></a>
   </div>
 </section>
   `;
@@ -124,6 +127,7 @@ export default function Home() {
     <p class="eyebrow">Showers &amp; Waterproofing</p>
     <h2>Showers</h2>
     <p>Every shower is built from the waterproofing layer up. We design custom layouts, recessed niches, mitered edges and tile finishes that stay beautiful through years of daily use.</p>
+    <a href="#work-shower" class="cat-btn">View Our Work <span style="font-size:1rem;">→</span></a>
   </div>
 </section>
   `;
@@ -134,6 +138,7 @@ export default function Home() {
     <p class="eyebrow">Kitchens &amp; Backsplashes</p>
     <h2>Kitchens</h2>
     <p>The kitchen is the heart of the home, and the backsplash is its signature. We design and install tile backsplashes that balance warmth, texture and practicality, creating a focal point that works alongside prep, cooking and conversation.</p>
+    <a href="#work-kitchen" class="cat-btn">View Our Work <span style="font-size:1rem;">→</span></a>
   </div>
 </section>
   `;
