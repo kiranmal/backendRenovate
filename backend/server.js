@@ -10,8 +10,8 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '20mb' }));
 
-const DATA_DIR = path.join(__dirname, 'data');
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, 'uploads');
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 const SECRET = process.env.ADMIN_SECRET || 'renovate-max2max-secret';
 const VALID_TOKEN = crypto.createHmac('sha256', SECRET).update(ADMIN_PASSWORD).digest('hex');
