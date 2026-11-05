@@ -10,8 +10,11 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "20mb" }));
 
+// Temporary storage for Vercel serverless environment
 const DATA_DIR = path.join(os.tmpdir(), "backend-data");
-const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, "uploads");
+const UPLOADS_DIR = path.join(os.tmpdir(), "uploads");
+// Create directories safely
+
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 const SECRET = process.env.ADMIN_SECRET || "renovate-max2max-secret";
 const VALID_TOKEN = crypto
@@ -19,10 +22,9 @@ const VALID_TOKEN = crypto
   .update(ADMIN_PASSWORD)
   .digest("hex");
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+fs.mkdirSync(DATA_DIR, { recursive: true });
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
 app.use("/uploads", express.static(UPLOADS_DIR));
 
 const upload = multer({
