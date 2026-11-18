@@ -193,7 +193,7 @@ export function useApi() {
     });
     if (res.status === 401) {
       localStorage.removeItem('admin_token');
-      window.location.hash = '#/admin';
+      window.location.reload(); // back to the login screen
       throw new Error('unauthorized');
     }
     return res.json();

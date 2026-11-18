@@ -1,0 +1,173 @@
+[
+  {
+    "slug": "tile-flooring",
+    "title": "Tile & Flooring",
+    "summary": "Professional installation for all tile formats and flooring applications.",
+    "description": "Porcelain, ceramic and stone tile installed with clean grout lines, level surfaces and finishes that feel solid underfoot for years.",
+    "points": [
+      "Porcelain, ceramic & natural stone",
+      "Large-format & patterned layouts",
+      "Floor levelling & substrate prep",
+      "Clean, consistent grout lines"
+    ],
+    "categories": [
+      "Tile & Flooring",
+      "Flooring",
+      "Tile"
+    ],
+    "image": "",
+    "published": true,
+    "order": 1
+  },
+  {
+    "slug": "bathroom-upgrades",
+    "title": "Bathroom Upgrades",
+    "summary": "Complete bathroom improvements with quality finishes and detailed execution.",
+    "description": "Complete bathroom transformations — new tile walls, floors, fixtures and waterproofing that turn an ordinary room into a calm, durable retreat.",
+    "points": [
+      "Floor-to-ceiling tile work",
+      "Vanities, fixtures & lighting",
+      "Tub-to-shower conversions",
+      "Full waterproofing systems"
+    ],
+    "categories": [
+      "Bathroom",
+      "Bathrooms"
+    ],
+    "image": "",
+    "published": true,
+    "order": 2
+  },
+  {
+    "slug": "kitchen-backsplash",
+    "title": "Kitchen Backsplash",
+    "summary": "Custom backsplash installation designed to complement your kitchen.",
+    "description": "Backsplashes that frame the kitchen with texture and colour, installed with precision around outlets, corners and cabinets.",
+    "points": [
+      "Subway, mosaic & slab tile",
+      "Precision cuts around outlets",
+      "Grout & sealant finishing",
+      "Design-forward layouts"
+    ],
+    "categories": [
+      "Kitchen",
+      "Kitchens"
+    ],
+    "image": "",
+    "published": true,
+    "order": 3
+  },
+  {
+    "slug": "custom-showers",
+    "title": "Custom Showers",
+    "summary": "Custom shower installations with detailed tile work and waterproofing.",
+    "description": "Built from the waterproofing layer up, with custom tile layouts, niche details and mitered edges that look as good as they perform.",
+    "points": [
+      "Custom tile layouts & niches",
+      "Frameless glass ready",
+      "Bench seats & curbs",
+      "Precision waterproofing"
+    ],
+    "categories": [
+      "Shower",
+      "Showers"
+    ],
+    "image": "",
+    "published": true,
+    "order": 4
+  },
+  {
+    "slug": "waterproofing",
+    "title": "Waterproofing",
+    "summary": "Reliable waterproofing solutions designed for long-lasting performance.",
+    "description": "Solid waterproofing for showers, bathrooms and wet areas so the beauty on the surface is backed by protection underneath.",
+    "points": [
+      "Shower pan & wall membranes",
+      "Wet area sealing systems",
+      "Flood-tested assemblies",
+      "Long-term leak protection"
+    ],
+    "categories": [
+      "Waterproofing",
+      "Shower"
+    ],
+    "image": "",
+    "published": true,
+    "order": 5
+  },
+  {
+    "slug": "fireplace-tile",
+    "title": "Fireplace Tile",
+    "summary": "Custom fireplace tile work and feature installations.",
+    "description": "A tiled fireplace becomes the room's anchor. We handle layout, heat-safe materials and crisp edges for a refined focal point.",
+    "points": [
+      "Heat-safe tile & stone",
+      "Floor-to-ceiling surrounds",
+      "Mantel & hearth details",
+      "Clean edge finishing"
+    ],
+    "categories": [
+      "Fireplace"
+    ],
+    "image": "",
+    "published": true,
+    "order": 6
+  },
+  {
+    "slug": "mitered-finishes",
+    "title": "45° Mitered Finishes",
+    "summary": "Premium 45-degree tile cuts and mitered edges for a clean, custom look.",
+    "description": "Premium 45-degree tile cuts and mitered edges that create clean corners, seamless steps and a custom, high-end look.",
+    "points": [
+      "Precision 45° angle cuts",
+      "Seamless outside corners",
+      "Niche & step detailing",
+      "High-end finish work"
+    ],
+    "categories": [
+      "Mitered",
+      "Tile"
+    ],
+    "image": "",
+    "published": true,
+    "order": 7
+  },
+  {
+    "slug": "home-repairs",
+    "title": "Home Repairs",
+    "summary": "Practical repairs and improvements for residential spaces.",
+    "description": "Thoughtful repairs and improvements that bring older rooms back to life without cutting corners on quality or finish.",
+    "points": [
+      "Tile & grout repairs",
+      "Surface restoration",
+      "Fixture replacements",
+      "Detail corrections"
+    ],
+    "categories": [
+      "Repair",
+      "Home Repairs"
+    ],
+    "image": "",
+    "published": true,
+    "order": 8
+  },
+  {
+    "slug": "appliance-installation",
+    "title": "Appliance Installation",
+    "summary": "Professional appliance installation and related home improvements.",
+    "description": "Professional installation support for appliances during your renovation, ensuring everything fits, sits level and functions safely.",
+    "points": [
+      "Range & hood installation",
+      "Dishwasher & fridge fit",
+      "Level & secure mounting",
+      "Renovation coordination"
+    ],
+    "categories": [
+      "Appliance",
+      "Kitchen"
+    ],
+    "image": "",
+    "published": true,
+    "order": 9
+  }
+]

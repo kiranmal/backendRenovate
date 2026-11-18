@@ -1,8 +1,9 @@
 import WorkSection from '../components/WorkSection.jsx';
-import { useSiteImages, imageUrl } from '../hooks/useContent.js';
+import { useSiteImages, imageUrl, useTexts, esc, escBr } from '../hooks/useContent.js';
 
 export default function Home() {
   const si = useSiteImages();
+  const t = useTexts();
   // Fallback items for each category (used if backend has no projects)
   const fallbackResidential = [
     { title: 'Modern Bathroom', image: '/images/IMG_0573.JPG.jpeg', description: 'A complete modern bathroom with marble-look floor, double vanity and a clean, glass shower.' },
@@ -43,12 +44,12 @@ export default function Home() {
   const html1 = `
 <section class="hero" id="home" style="background-image:url('${imageUrl(si.get('home', 0, '/images/md-contact.jpg'))}');">
   <div class="hero-inner">
-    <p class="eyebrow">Tile &amp; Flooring · Residential &amp; Commercial</p>
-    <h1>We design spaces<br>that feel timeless.</h1>
-    <p class="sub">Tile Installation · Bathroom Upgrades · Kitchen Backsplash · Custom Showers</p>
+    <p class="eyebrow">${esc(t('home.hero.eyebrow'))}</p>
+    <h1>${escBr(t('home.hero.title'))}</h1>
+    <p class="sub">${esc(t('home.hero.sub'))}</p>
     <div class="actions">
-      <a href="#projects" class="btn-primary">Explore Projects <span style="font-size:1.1rem;">→</span></a>
-      <a href="#contact" class="btn-outline">Start a Conversation <span style="font-size:1.1rem;">→</span></a>
+      <a href="#projects" class="btn-primary">${esc(t('home.hero.cta1'))} <span style="font-size:1.1rem;">→</span></a>
+      <a href="#contact" class="btn-outline">${esc(t('home.hero.cta2'))} <span style="font-size:1.1rem;">→</span></a>
     </div>
   </div>
   <a href="#philosophy" class="scroll">
@@ -60,7 +61,7 @@ export default function Home() {
 <section class="triad" id="philosophy">
   <div class="container">
     <div class="head">
-      <h2>Good Design Yearns For Boundless Style That Is Underlined By Simplicity</h2>
+      <h2>${esc(t('home.philosophy.heading'))}</h2>
       <div class="line"></div>
     </div>
     <div class="triad-grid">

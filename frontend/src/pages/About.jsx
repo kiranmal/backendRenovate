@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
-import { useSiteImages, imageUrl } from '../hooks/useContent.js';
+import { useSiteImages, imageUrl, useTexts, esc, escBr } from '../hooks/useContent.js';
 import AboutTestimonials from '../components/AboutTestimonials.jsx';
 import './About.css';
 
 export default function About() {
   const si = useSiteImages();
+  const t = useTexts();
   useEffect(() => {
     const reveals = document.querySelectorAll('.abt-reveal');
     const io = new IntersectionObserver((entries) => {
@@ -23,8 +24,8 @@ export default function About() {
     <section class="abt-hero" style="background-image:url('${imageUrl(si.get('abt-hero', 0, '/images/IMG_0455.jpg'))}');">
       <div class="abt-hero-inner abt-reveal">
         <p class="eyebrow">About</p>
-        <h1>About Us</h1>
-        <p>Built on craftsmanship. Driven by detail.</p>
+        <h1>${esc(t('about.hero.title'))}</h1>
+        <p>${esc(t('about.hero.sub'))}</p>
       </div>
     </section>
 
@@ -34,9 +35,9 @@ export default function About() {
           <img src="${imageUrl(si.get('abt-who', 0, '/images/IMG_9687.jpg'))}" alt="Refined residential interior" loading="lazy" decoding="async">
         </div>
         <div class="abt-reveal">
-          <h2>Craftsmanship with purpose.</h2>
-          <p><strong>Renovate Max2Max Inc.</strong> is focused on delivering quality renovation, tile, flooring, and home improvement solutions with a strong attention to detail.</p>
-          <p>From bathrooms and kitchens to custom showers, flooring, fireplaces, waterproofing, and home improvements, every project is approached with care, precision, and practical thinking.</p>
+          <h2>${esc(t('about.who.heading'))}</h2>
+          <p>${escBr(t('about.who.p1'))}</p>
+          <p>${escBr(t('about.who.p2'))}</p>
         </div>
       </div>
     </section>
@@ -44,11 +45,11 @@ export default function About() {
     <section class="abt-founder">
       <div class="container abt-founder-grid">
         <div class="abt-reveal">
-          <h2>Meet Gurdeep</h2>
-          <p class="role">Founder / Owner</p>
-          <p>Gurdeep Singh is the hands-on owner behind Renovate Max2Max. He takes pride in doing the work properly — not quickly — and in leaving every space cleaner, sharper, and better than he found it.</p>
-          <p>His approach is built on careful preparation, clean execution, and clear communication. He believes that clients should feel confident at every stage of a project, from the first conversation to the final walkthrough.</p>
-          <p>For Gurdeep, quality is not a promise; it is the result of paying attention to the details that most people do not notice.</p>
+          <h2>${esc(t('about.founder.heading'))}</h2>
+          <p class="role">${esc(t('about.founder.role'))}</p>
+          <p>${escBr(t('about.founder.p1'))}</p>
+          <p>${escBr(t('about.founder.p2'))}</p>
+          <p>${escBr(t('about.founder.p3'))}</p>
         </div>
         <div class="abt-reveal">
           <img src="${imageUrl(si.get('abt-founder', 0, '/images/IMG_9545.jpg'))}" alt="Tile and craft detail" loading="lazy" decoding="async">

@@ -10,20 +10,72 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "20mb" }));
 
-// Temporary storage for Vercel serverless environment
-const DATA_DIR = path.join(os.tmpdir(), "backend-data");
-const UPLOADS_DIR = path.join(os.tmpdir(), "uploads");
-// Create directories safely
+// Never let browsers/CDNs cache API answers — otherwise admin edits can look
+// "not updated" on the live site until the cache expires.
+app.use("/api", (req, res, next) => {
+  res.set("Cache-Control", "no-store, max-age=0");
+  next();
+});
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+/* ---------- persistent storage ----------
+   Content lives in backend/data (JSON files) and backend/uploads (images).
+   Override with DATA_DIR / UPLOADS_DIR env vars if you want them elsewhere.
+   Only if those folders are read-only (e.g. Vercel serverless) do we fall
+   back to the OS temp folder — and then edits are NOT permanent. The admin
+   panel shows a red warning when that happens. */
+let DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
+let UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, "uploads");
+let STORAGE_PERSISTENT = true;
+function ensureDir(dir, fallbackName) {
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.accessSync(dir, fs.constants.W_OK);
+    return dir;
+  } catch {
+    STORAGE_PERSISTENT = false;
+    const tmp = path.join(os.tmpdir(), fallbackName);
+    fs.mkdirSync(tmp, { recursive: true });
+    return tmp;
+  }
+}
+DATA_DIR = ensureDir(DATA_DIR, "renovate-data");
+UPLOADS_DIR = ensureDir(UPLOADS_DIR, "renovate-uploads");
+
+/* ---------- admin auth ----------
+   Password precedence: password changed from the admin panel (data/auth.json)
+   > ADMIN_PASSWORD env var > default. The session token is derived from the
+   current password, so changing the password signs out every old session. */
+const ENV_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 const SECRET = process.env.ADMIN_SECRET || "renovate-max2max-secret";
-const VALID_TOKEN = crypto
-  .createHmac("sha256", SECRET)
-  .update(ADMIN_PASSWORD)
-  .digest("hex");
+const AUTH_FILE = path.join(DATA_DIR, "auth.json");
 
-fs.mkdirSync(DATA_DIR, { recursive: true });
-fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+function readAuth() {
+  try {
+    return JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"));
+  } catch {
+    return null;
+  }
+}
+function hashPassword(pw, salt) {
+  return crypto.scryptSync(String(pw), salt, 64).toString("hex");
+}
+function checkPassword(pw) {
+  const auth = readAuth();
+  if (auth && auth.salt && auth.hash) {
+    const a = Buffer.from(hashPassword(pw, auth.salt), "hex");
+    const b = Buffer.from(auth.hash, "hex");
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+  }
+  return String(pw) === ENV_PASSWORD;
+}
+function currentToken() {
+  const auth = readAuth();
+  const basis = auth && auth.hash ? auth.hash : ENV_PASSWORD;
+  return crypto.createHmac("sha256", SECRET).update(basis).digest("hex");
+}
+function usingDefaultPassword() {
+  return !readAuth() && ENV_PASSWORD === "admin123";
+}
 
 app.use("/uploads", express.static(UPLOADS_DIR));
 
@@ -76,7 +128,7 @@ function newId() {
 
 function requireAdmin(req, res, next) {
   const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
-  if (token !== VALID_TOKEN)
+  if (token !== currentToken())
     return res.status(401).json({ success: false, message: "Unauthorized" });
   next();
 }
@@ -150,6 +202,7 @@ function seed() {
   }
   // Seed services if file doesn't exist
   if (!fs.existsSync(fileFor("services"))) writeCol("services", []);
+  if (!fs.existsSync(fileFor("texts"))) writeObj("texts", {});
   if (!fs.existsSync(fileFor("projects"))) writeCol("projects", []);
   if (!fs.existsSync(fileFor("quotes"))) writeCol("quotes", []);
   if (!fs.existsSync(fileFor("activity"))) writeCol("activity", []);
@@ -160,6 +213,29 @@ function seed() {
   if (!fs.existsSync(fileFor("image-extras"))) writeObj("image-extras", {});
   if (!fs.existsSync(fileFor("service-images"))) writeObj("service-images", {});
   if (!fs.existsSync(fileFor("site-images"))) writeObj("site-images", {});
+
+  // First run only: copy the 9 built-in services into the database so every
+  // service can be edited (title, text, bullet points, order, show/hide) from
+  // the admin. A flag in settings stops them coming back after you delete some.
+  try {
+    const settings = readObj("settings");
+    const current = readCol("services");
+    if (!settings.servicesSeeded && current.length === 0) {
+      const seedServices = JSON.parse(
+        fs.readFileSync(path.join(__dirname, "services-seed.json"), "utf8"),
+      );
+      const now = new Date().toISOString();
+      writeCol(
+        "services",
+        seedServices.map((x) => ({ id: newId(), ...x, createdAt: now, updatedAt: now })),
+      );
+    }
+    if (!settings.servicesSeeded) {
+      writeObj("settings", { ...settings, servicesSeeded: true });
+    }
+  } catch {
+    /* seed file missing — skip */
+  }
 
   // Store every service menu page's images in the DB.
   // Each slug gets { hero, images, added, removed } — existing admin
@@ -253,6 +329,9 @@ app.get("/api/content/service-images", (req, res) => {
 app.get("/api/content/site-images", (req, res) => {
   res.json({ success: true, data: readObj("site-images") });
 });
+app.get("/api/content/texts", (req, res) => {
+  res.json({ success: true, data: readObj("texts") });
+});
 app.get("/api/content/:collection", (req, res) => {
   const allowed = ["services", "projects", "testimonials", "settings", "seo"];
   if (!allowed.includes(req.params.collection))
@@ -260,24 +339,84 @@ app.get("/api/content/:collection", (req, res) => {
   if (req.params.collection === "settings" || req.params.collection === "seo") {
     return res.json({ success: true, data: readObj(req.params.collection) });
   }
-  res.json({
-    success: true,
-    data: readCol(req.params.collection).filter((r) => r.published),
-  });
+  let rows = readCol(req.params.collection).filter((r) => r.published);
+  if (req.params.collection === "services")
+    rows = rows.sort((a, b) => (a.order || 0) - (b.order || 0));
+  res.json({ success: true, data: rows });
 });
 
 /* ---------- auth ---------- */
+const loginAttempts = new Map(); // ip -> { count, until }
 app.post("/api/admin/login", (req, res) => {
-  const { password } = req.body;
-  if (password === ADMIN_PASSWORD) {
-    logActivity("admin_login");
-    return res.json({
-      success: true,
-      token: VALID_TOKEN,
-      name: "Administrator",
+  const ip = req.ip || "unknown";
+  const rec = loginAttempts.get(ip) || { count: 0, until: 0 };
+  if (rec.until > Date.now()) {
+    return res.status(429).json({
+      success: false,
+      message: "Too many wrong attempts. Please wait a few minutes and try again.",
     });
   }
+  const { password } = req.body || {};
+  if (password && checkPassword(password)) {
+    loginAttempts.delete(ip);
+    logActivity("admin_login");
+    return res.json({ success: true, token: currentToken(), name: "Administrator" });
+  }
+  rec.count += 1;
+  if (rec.count >= 8) {
+    rec.count = 0;
+    rec.until = Date.now() + 5 * 60 * 1000;
+  }
+  loginAttempts.set(ip, rec);
   res.status(401).json({ success: false, message: "Invalid password" });
+});
+
+app.post("/api/admin/change-password", requireAdmin, (req, res) => {
+  const { currentPassword, newPassword } = req.body || {};
+  if (!checkPassword(currentPassword || ""))
+    return res
+      .status(400)
+      .json({ success: false, message: "Current password is not correct" });
+  if (!newPassword || String(newPassword).length < 8)
+    return res.status(400).json({
+      success: false,
+      message: "New password must be at least 8 characters",
+    });
+  const salt = crypto.randomBytes(16).toString("hex");
+  fs.writeFileSync(
+    AUTH_FILE,
+    JSON.stringify({ salt, hash: hashPassword(newPassword, salt), changedAt: new Date().toISOString() }, null, 2),
+  );
+  logActivity("password_changed");
+  res.json({ success: true, token: currentToken() });
+});
+
+/* ---------- system status (shown as a banner in the admin) ---------- */
+app.get("/api/admin/system", requireAdmin, (req, res) => {
+  res.json({
+    success: true,
+    system: {
+      persistent: STORAGE_PERSISTENT,
+      defaultPassword: usingDefaultPassword(),
+      serverless: !!process.env.VERCEL,
+      time: new Date().toISOString(),
+    },
+  });
+});
+
+/* ---------- page text (editable website wording) ---------- */
+app.get("/api/admin/texts", requireAdmin, (req, res) => {
+  res.json({ success: true, data: readObj("texts") });
+});
+app.put("/api/admin/texts", requireAdmin, (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const clean = {};
+  Object.keys(body).forEach((k) => {
+    if (typeof body[k] === "string" && body[k].trim() !== "") clean[k] = body[k];
+  });
+  writeObj("texts", clean);
+  logActivity("page_text_updated");
+  res.json({ success: true, data: clean });
 });
 
 /* ---------- stats ---------- */
@@ -365,14 +504,21 @@ function makeRow(collection, body) {
   const id = newId();
   const now = new Date().toISOString();
   if (collection === "services") {
+    const autoSlug = String(body.slug || body.title || "")
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
     return {
       id,
       title: body.title || "",
-      slug: body.slug || "",
+      slug: autoSlug,
       summary: body.summary || "",
       description: body.description || "",
       image: body.image || "",
       icon: body.icon || "",
+      points: Array.isArray(body.points) ? body.points : [],
+      categories: Array.isArray(body.categories) ? body.categories : [],
       published: body.published !== false,
       order: body.order || 0,
       createdAt: now,
@@ -588,4 +734,11 @@ app.put("/api/admin/site-images", requireAdmin, (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log("Server running on port " + PORT));
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log("Server running on port " + PORT);
+    console.log("Data folder:   " + DATA_DIR + (STORAGE_PERSISTENT ? "" : "  (TEMPORARY — edits will be lost!)"));
+    console.log("Uploads folder: " + UPLOADS_DIR);
+  });
+}
+module.exports = app;

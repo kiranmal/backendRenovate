@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSiteImages, imageUrl } from '../hooks/useContent.js';
+import { useSiteImages, imageUrl, useSettings, useTexts } from '../hooks/useContent.js';
 import API from '../config.js';
 import './Contact.css';
 
@@ -7,6 +7,8 @@ export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', type: '', details: '' });
   const [status, setStatus] = useState({ loading: false, success: '', error: '' });
   const si = useSiteImages();
+  const cfg = useSettings();
+  const t = useTexts();
 
   useEffect(() => {
     const reveals = document.querySelectorAll('.ct-reveal');
@@ -57,8 +59,8 @@ export default function Contact() {
       <section className="ct-hero" style={{ backgroundImage: `url('${imageUrl(si.get('ct-hero', 0, '/images/md-contact.jpg'))}')` }}>
         <div className="ct-hero-inner ct-reveal">
           <p className="eyebrow">Contact</p>
-          <h1>Let's Talk</h1>
-          <p>Have a project in mind? Let's turn your ideas into something beautifully built.</p>
+          <h1>{t('contact.hero.title')}</h1>
+          <p>{t('contact.hero.sub')}</p>
         </div>
       </section>
 
@@ -66,14 +68,14 @@ export default function Contact() {
         <div className="container ct-main-grid">
           <div className="ct-info ct-reveal">
             <h2>Get In Touch</h2>
-            <h3>Renovate Max2Max Inc.</h3>
-            <p>Gurdeep Singh</p>
-            <p>Edmonton, Alberta</p>
-            <a href="tel:+14378698609">+1 (437) 869-8609</a>
-            <a href="mailto:Renovatemax2max@gmail.com">Renovatemax2max@gmail.com</a>
+            <h3>{cfg.siteName}</h3>
+            <p>{t('contact.person')}</p>
+            <p>{cfg.address}</p>
+            <a href={`tel:${cfg.tel}`}>{cfg.phone}</a>
+            <a href={`mailto:${cfg.email}`}>{cfg.email}</a>
             <div className="ct-actions">
-              <a href="tel:+14378698609">Call Us</a>
-              <a href="mailto:Renovatemax2max@gmail.com">Email Us</a>
+              <a href={`tel:${cfg.tel}`}>Call Us</a>
+              <a href={`mailto:${cfg.email}`}>Email Us</a>
             </div>
           </div>
 

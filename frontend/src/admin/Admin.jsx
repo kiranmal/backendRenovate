@@ -6,6 +6,7 @@ import { IMAGE_USAGE, EXTERNAL_IMAGES, getUsage, isUsed } from './imageUsage.js'
 import { WEBSITE_IMAGE_MAP } from './websiteImageMap.js';
 import { FRONTEND_SERVICES, FRONTEND_PROJECTS, FRONTEND_GALLERY, FRONTEND_TESTIMONIALS, mergeServices, mergeProjects, mergeTestimonials, getAllGalleryImages, getGalleryByCategory, getGalleryByPage } from './frontendData.js';
 import { SERVICES as SERVICE_PAGES } from '../data/servicesData.js';
+import { SystemBanner, PageText, ServicesManager, SettingsPage, Help } from './CmsPages.jsx';
 
 window.__ADM_API__ = API;
 const API_ORIGIN = API.replace(/\/api$/, '');
@@ -53,13 +54,14 @@ const NAV = [
   { group: 'Overview', items: [
     { id: 'dashboard', label: 'Dashboard', icon: '◈' },
   ]},
-  { group: 'Content', items: [
+  { group: 'Website Content', items: [
+    { id: 'page-text', label: 'Page Text', icon: 'T' },
     { id: 'website-images', label: 'Website Images', icon: '▦' },
-    { id: 'service-images', label: 'Service Images', icon: '▤' },
     { id: 'services', label: 'Services', icon: '⚙' },
+    { id: 'service-images', label: 'Service Images', icon: '▤' },
     { id: 'projects', label: 'Projects', icon: '▣' },
     { id: 'testimonials', label: 'Testimonials', icon: '✦' },
-    { id: 'gallery', label: 'Gallery', icon: '▦' },
+    { id: 'gallery', label: 'Gallery (view)', icon: '▥' },
   ]},
   { group: 'Engagement', items: [
     { id: 'enquiries', label: 'Enquiries', icon: '✉' },
@@ -67,7 +69,7 @@ const NAV = [
   ]},
   { group: 'System', items: [
     { id: 'settings', label: 'Settings', icon: '⚙' },
-    { id: 'users', label: 'Users', icon: '☻' },
+    { id: 'help', label: 'Help', icon: '?' },
   ]},
 ];
 
@@ -114,7 +116,7 @@ function Layout({ view, setView, collapsed, setCollapsed, onLogout, children }) 
             <div className="adm-avatar" title="Administrator">A</div>
           </div>
         </header>
-        <div className="adm-content adm-fade" key={view}>{children}</div>
+        <div className="adm-content adm-fade" key={view}><SystemBanner />{children}</div>
       </div>
     </div>
   );
@@ -151,7 +153,7 @@ function Dashboard({ go }) {
       <div className="adm-stats">
         <StatCard ico="✉" tone="accent" num={stats.total} label="Total Enquiries" />
         <StatCard ico="●" tone="warn" num={stats.new} label="New Enquiries" />
-        <StatCard ico="⚙" tone="blue" num={FRONTEND_SERVICES.length + stats.services} label="Services" sub={`${FRONTEND_SERVICES.length} frontend + ${stats.services} database`} />
+        <StatCard ico="⚙" tone="blue" num={stats.services} label="Services" sub={`${stats.servicesPublished} visible on website`} />
         <StatCard ico="▣" tone="dark" num={FRONTEND_PROJECTS.length + stats.projects} label="Projects" sub={`${FRONTEND_PROJECTS.length} frontend + ${stats.projects} database`} />
       </div>
       <div className="adm-grid-2">
@@ -432,173 +434,6 @@ function CrudPage({ collection, singular, title, desc, columns, renderForm, seed
   );
 }
 
-/* ---------- Services (frontend + backend merged, CRUD on database) ---------- */
-function Services() {
-  const api = useApi();
-  const toast = useToast();
-  const confirm = useConfirm();
-  const [backendServices, setBackendServices] = useState(null);
-  const [detail, setDetail] = useState(null);
-  const [editing, setEditing] = useState(null);
-
-  const load = () => {
-    api('/admin/services').then((d) => { if (d.success) setBackendServices(d.data); else setBackendServices([]); });
-  };
-  useEffect(load, []);
-
-  const allServices = backendServices ? mergeServices(backendServices) : null;
-
-  const startCreate = () => setEditing({
-    title: '', slug: '', summary: '', description: '', image: '', icon: '', published: true, order: 0, source: 'database',
-  });
-  const startEdit = (s) => setEditing({ ...s });
-  const cancelEdit = () => setEditing(null);
-
-  const save = async () => {
-    if (!editing.title?.trim()) { toast('Title is required', 'error'); return; }
-    const method = editing.id ? 'PUT' : 'POST';
-    const url = editing.id ? `/admin/services/${editing.id}` : '/admin/services';
-    const payload = { ...editing };
-    if (payload.id) delete payload.id;
-    await api(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    setEditing(null); toast(editing.id ? 'Service updated' : 'Service created', 'success'); load();
-  };
-
-  const del = async (s) => {
-    const ok = await confirm({ title: 'Delete service', message: `Are you sure you want to delete "${s.title}"?` });
-    if (!ok) return;
-    await api(`/admin/services/${s.id}`, { method: 'DELETE' });
-    toast('Service deleted', 'success'); load();
-  };
-
-  const dbServices = allServices ? allServices.filter((s) => s.source === 'database') : [];
-
-  if (!allServices) return <div className="adm-panel"><TableSkeleton /></div>;
-
-  return (
-    <>
-      <div className="adm-page-head">
-        <div><h1>Services</h1><p>Services displayed on your website ({allServices.length} total)</p></div>
-        <div className="adm-page-actions">
-          <button className="adm-btn adm-btn-primary" onClick={startCreate}>+ Add Service</button>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: '.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-        <span className="adm-chip"><strong>{FRONTEND_SERVICES.length}</strong>&nbsp;from frontend</span>
-        <span className="adm-chip"><strong>{dbServices.length}</strong>&nbsp;from database</span>
-      </div>
-
-      {/* Database services — editable */}
-      {dbServices.length > 0 && (
-        <div className="adm-panel" style={{ marginBottom: '1rem' }}>
-          <div className="adm-panel-head"><h3>Database Services</h3><span className="adm-muted">{dbServices.length} editable</span></div>
-          <div className="adm-panel-body">
-            <div className="adm-media-grid">
-              {dbServices.map((s) => (
-                <div key={s.id} className="adm-media-card">
-                  <div className="adm-media-img">
-                    {s.image ? <img src={s.image} alt={s.title} loading="lazy" /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>⚙</div>}
-                    <span style={{ position: 'absolute', top: 6, left: 6, fontSize: '.62rem', fontWeight: 600, padding: '.15rem .4rem', borderRadius: 4, background: 'var(--info-soft)', color: 'var(--info)' }}>Database</span>
-                  </div>
-                  <div className="adm-media-info">
-                    <div className="adm-media-name">{s.title}</div>
-                    <div className="adm-media-meta">{s.summary}</div>
-                  </div>
-                  <div className="adm-media-actions">
-                    <button onClick={() => setDetail(s)}>View</button>
-                    <button onClick={() => startEdit(s)}>Edit</button>
-                    <button className="danger" onClick={() => del(s)}>Delete</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Frontend services — read-only table */}
-      <div className="adm-panel">
-        <div className="adm-panel-head"><h3>Frontend Services</h3><span className="adm-muted">{FRONTEND_SERVICES.length} hardcoded in website</span></div>
-        <div className="adm-panel-body">
-          <div className="adm-table-wrap">
-            <table className="adm-table">
-              <thead><tr><th></th><th>Service</th><th>Used On</th><th>Status</th><th></th></tr></thead>
-              <tbody>
-                {allServices.filter((s) => s.source === 'frontend').map((s) => (
-                  <tr key={s.id}>
-                    <td>{s.image ? <img src={s.image} className="adm-thumb" alt="" /> : <div className="adm-thumb" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>⚙</div>}</td>
-                    <td>
-                      <div className="adm-row-title">{s.title}</div>
-                      <div className="adm-row-sub">{s.summary}</div>
-                    </td>
-                    <td>{s.pages ? s.pages.join(', ') : '—'}</td>
-                    <td><Badge status="published">Active</Badge></td>
-                    <td><div className="adm-cell-actions">
-                      <button className="adm-btn adm-btn-sm" onClick={() => setDetail(s)}>View</button>
-                    </div></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* View detail modal */}
-      <Modal open={!!detail} onClose={() => setDetail(null)} title={detail?.title || 'Service'} size="lg"
-        footer={<button className="adm-btn" onClick={() => setDetail(null)}>Close</button>}>
-        {detail && (
-          <div>
-            {detail.image && <div style={{ borderRadius: 8, overflow: 'hidden', marginBottom: '1.25rem' }}><img src={detail.image} alt="" style={{ width: '100%', maxHeight: 300, objectFit: 'cover' }} /></div>}
-            <div className="adm-field-row">
-              <Field label="Service Name"><Input value={detail.title} readOnly /></Field>
-              <Field label="Source"><Input value={detail.source === 'frontend' ? 'Frontend (static)' : 'Database'} readOnly /></Field>
-            </div>
-            <Field label="Summary"><Input value={detail.summary} readOnly /></Field>
-            <Field label="Description"><Textarea value={detail.description} readOnly /></Field>
-            <Field label="Used On Pages">
-              {detail.pages ? (
-                <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
-                  {detail.pages.map((p) => <span key={p} className="adm-badge published dot">{p}</span>)}
-                </div>
-              ) : <span className="adm-muted">—</span>}
-            </Field>
-            {detail.source === 'frontend' && (
-              <div style={{ padding: '.5rem .75rem', background: 'var(--warn-soft)', borderRadius: 7, fontSize: '.82rem', color: 'var(--warn)', marginTop: '.5rem' }}>
-                ⚠ This service is hardcoded in the frontend. To edit it, modify the frontend source code.
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
-
-      {/* Create/Edit modal */}
-      <Modal open={!!editing} onClose={cancelEdit} title={editing?.id ? 'Edit Service' : 'Add Service'} size="lg"
-        footer={editing && (
-          <>
-            <button className="adm-btn" onClick={cancelEdit}>Cancel</button>
-            <button className="adm-btn adm-btn-primary" onClick={save}>{editing.id ? 'Update' : 'Create'}</button>
-          </>
-        )}>
-        {editing && (
-          <div>
-            <Field label="Service Title" required><Input value={editing.title} onChange={(e) => setEditing({ ...editing, title: e.target.value })} placeholder="e.g. Bathroom Renovation" /></Field>
-            <Field label="Summary"><Input value={editing.summary} onChange={(e) => setEditing({ ...editing, summary: e.target.value })} placeholder="Short one-line description" /></Field>
-            <Field label="Description"><Textarea value={editing.description} onChange={(e) => setEditing({ ...editing, description: e.target.value })} placeholder="Full description of the service" /></Field>
-            <ImagePicker value={editing.image} onChange={(v) => setEditing({ ...editing, image: v })} label="Service Image" />
-            <div className="adm-field-row">
-              <Field label="Icon (emoji or text)"><Input value={editing.icon} onChange={(e) => setEditing({ ...editing, icon: e.target.value })} placeholder="🛁" /></Field>
-              <Field label="Display Order"><Input type="number" value={editing.order} onChange={(e) => setEditing({ ...editing, order: +e.target.value })} /></Field>
-            </div>
-            <label className="adm-checkbox"><input type="checkbox" checked={editing.published} onChange={(e) => setEditing({ ...editing, published: e.target.checked })} /> Published</label>
-          </div>
-        )}
-      </Modal>
-    </>
-  );
-}
-
 /* ---------- Projects (frontend + backend merged, CRUD on database) ---------- */
 function Projects() {
   const api = useApi();
@@ -835,8 +670,6 @@ function Testimonials() {
       </div>
       <div className="adm-panel">
         <div className="adm-panel-body">
-          <Empty icon="✦" title="No testimonials on the website yet" sub="The frontend has a testimonials section on the Home page, but no testimonials are currently stored. Add testimonials using the form below — they will appear on the website immediately." />
-          <div className="adm-divider" />
           <CrudPage collection="testimonials" singular="Testimonial" title="" desc="" icon="✦"
             seedForm={() => ({ name: '', designation: '', image: '', text: '', rating: 5, published: true })}
             columns={[
@@ -1440,108 +1273,6 @@ function Media() {
 }
 
 /* ============================================================
-   SEO
-   ============================================================ */
-function SEO() {
-  const api = useApi();
-  const toast = useToast();
-  const [seo, setSeo] = useState(null);
-  const [page, setPage] = useState('home');
-  useEffect(() => { api('/admin/seo').then((d) => setSeo(d.data || {})); }, []);
-  if (!seo) return <div className="adm-panel"><div className="adm-panel-body"><Skeleton h={200} /></div></div>;
-  const pages = ['home', 'about', 'services', 'residential', 'philosophy', 'contact'];
-  const cur = seo[page] || {};
-  const save = async () => {
-    const next = { ...seo, [page]: cur };
-    await api('/admin/seo', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
-    setSeo(next); toast('SEO saved', 'success');
-  };
-  return (
-    <>
-      <div className="adm-page-head"><div><h1>SEO</h1><p>Manage meta tags for each page</p></div></div>
-      <div className="adm-tabs" style={{ marginBottom: '1.25rem' }}>
-        {pages.map((p) => <button key={p} className={page === p ? 'active' : ''} onClick={() => setPage(p)} style={{ textTransform: 'capitalize' }}>{p}</button>)}
-      </div>
-      <div className="adm-grid-2">
-        <div className="adm-panel">
-          <div className="adm-panel-head"><h3>Meta Information</h3></div>
-          <div className="adm-panel-body">
-            <Field label="Meta Title"><Input value={cur.title || ''} onChange={(e) => setSeo({ ...seo, [page]: { ...cur, title: e.target.value } })} placeholder="Renovate Max2Max Inc." /></Field>
-            <Field label="Meta Description"><Textarea value={cur.description || ''} onChange={(e) => setSeo({ ...seo, [page]: { ...cur, description: e.target.value } })} placeholder="Professional renovation services in Edmonton…" /></Field>
-            <Field label="Keywords"><Input value={cur.keywords || ''} onChange={(e) => setSeo({ ...seo, [page]: { ...cur, keywords: e.target.value } })} placeholder="renovation, tile, edmonton" /></Field>
-            <Field label="OG Image URL"><Input value={cur.ogImage || ''} onChange={(e) => setSeo({ ...seo, [page]: { ...cur, ogImage: e.target.value } })} placeholder="/images/logo.png" /></Field>
-            <button className="adm-btn adm-btn-primary" onClick={save}>Save SEO</button>
-          </div>
-        </div>
-        <div className="adm-panel">
-          <div className="adm-panel-head"><h3>Search Preview</h3></div>
-          <div className="adm-panel-body">
-            <div style={{ fontFamily: 'Arial', border: '1px solid var(--border)', borderRadius: 8, padding: '1rem', background: '#fff' }}>
-              <div style={{ fontSize: '.78rem', color: '#202124' }}>https://renovate-max-2-max-inc.vercel.app</div>
-              <div style={{ fontSize: '1.1rem', color: '#1a0dab', marginTop: '.2rem' }}>{cur.title || 'Renovate Max2Max Inc.'}</div>
-              <div style={{ fontSize: '.82rem', color: '#4d5156', marginTop: '.15rem' }}>{cur.description || 'Professional tile installation, bathroom upgrades, custom showers, waterproofing, kitchen backsplashes, flooring and renovation services in Edmonton, Alberta.'}</div>
-            </div>
-            <p className="adm-muted" style={{ marginTop: '1rem' }}>This is approximately how your page appears in Google search results.</p>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* ============================================================
-   SETTINGS
-   ============================================================ */
-function Settings() {
-  const api = useApi();
-  const toast = useToast();
-  const [s, setS] = useState(null);
-  useEffect(() => { api('/admin/settings').then((d) => setS(d.data || {})); }, []);
-  if (!s) return <div className="adm-panel"><div className="adm-panel-body"><Skeleton h={200} /></div></div>;
-  const save = async () => { await api('/admin/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(s) }); toast('Settings saved', 'success'); };
-  return (
-    <>
-      <div className="adm-page-head"><div><h1>Settings</h1><p>Manage your website configuration</p></div>
-        <button className="adm-btn adm-btn-primary" onClick={save}>Save Changes</button></div>
-      <div className="adm-grid-2">
-        <div className="adm-panel">
-          <div className="adm-panel-head"><h3>General</h3></div>
-          <div className="adm-panel-body">
-            <Field label="Website Name"><Input value={s.siteName || ''} onChange={(e) => setS({ ...s, siteName: e.target.value })} /></Field>
-            <Field label="Tagline"><Input value={s.tagline || ''} onChange={(e) => setS({ ...s, tagline: e.target.value })} /></Field>
-            <Field label="Logo URL"><Input value={s.logo || ''} onChange={(e) => setS({ ...s, logo: e.target.value })} placeholder="/images/logo.png" /></Field>
-          </div>
-        </div>
-        <div className="adm-panel">
-          <div className="adm-panel-head"><h3>Contact</h3></div>
-          <div className="adm-panel-body">
-            <Field label="Phone"><Input value={s.phone || ''} onChange={(e) => setS({ ...s, phone: e.target.value })} placeholder="437-869-8609" /></Field>
-            <Field label="Email"><Input value={s.email || ''} onChange={(e) => setS({ ...s, email: e.target.value })} placeholder="Renovatemax2max@gmail.com" /></Field>
-            <Field label="Address"><Input value={s.address || ''} onChange={(e) => setS({ ...s, address: e.target.value })} placeholder="Edmonton, Alberta" /></Field>
-          </div>
-        </div>
-        <div className="adm-panel">
-          <div className="adm-panel-head"><h3>Social</h3></div>
-          <div className="adm-panel-body">
-            <Field label="Instagram"><Input value={s.instagram || ''} onChange={(e) => setS({ ...s, instagram: e.target.value })} /></Field>
-            <Field label="Facebook"><Input value={s.facebook || ''} onChange={(e) => setS({ ...s, facebook: e.target.value })} /></Field>
-            <Field label="WhatsApp"><Input value={s.whatsapp || ''} onChange={(e) => setS({ ...s, whatsapp: e.target.value })} /></Field>
-          </div>
-        </div>
-        <div className="adm-panel">
-          <div className="adm-panel-head"><h3>Security</h3></div>
-          <div className="adm-panel-body">
-            <p className="adm-muted">Admin password is managed via the <code>ADMIN_PASSWORD</code> environment variable on your hosting provider (Render). Change it there to update login credentials.</p>
-            <div className="adm-divider" />
-            <Field label="Current Session"><Input value="Active · single-admin" readOnly /></Field>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* ============================================================
    ACTIVITY LOGS
    ============================================================ */
 function Activity() {
@@ -1563,30 +1294,6 @@ function Activity() {
               </div>
             </div>
           ))}
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* ============================================================
-   USERS (single-admin — shows profile)
-   ============================================================ */
-function Users() {
-  return (
-    <>
-      <div className="adm-page-head"><div><h1>Users</h1><p>Admin account management</p></div></div>
-      <div className="adm-panel">
-        <div className="adm-panel-body">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-            <div className="adm-avatar" style={{ width: 56, height: 56, fontSize: '1.2rem' }}>A</div>
-            <div><div style={{ fontWeight: 600, fontSize: '1rem' }}>Administrator</div><div className="adm-muted">Super Admin · Single-admin mode</div></div>
-          </div>
-          <div className="adm-divider" />
-          <p className="adm-muted">This deployment uses single-admin authentication. To enable multiple users with roles (Super Admin, Admin, Editor), the backend would need user accounts, JWT sessions, and a permissions system. That's available as a future upgrade.</p>
-          <div className="adm-divider" />
-          <Field label="Role"><Input value="Super Admin (full access)" readOnly /></Field>
-          <Field label="Last Login"><Input value={new Date().toLocaleString()} readOnly /></Field>
         </div>
       </div>
     </>
@@ -1857,7 +1564,7 @@ export default function Admin() {
     </ConfirmProvider></ToastProvider>
   );
 
-  const pages = { dashboard: Dashboard, enquiries: Enquiries, 'website-images': WebsiteImages, 'service-images': ServiceImages, services: Services, projects: Projects, testimonials: Testimonials, gallery: Gallery, settings: Settings, activity: Activity, users: Users };
+  const pages = { dashboard: Dashboard, enquiries: Enquiries, 'website-images': WebsiteImages, 'service-images': ServiceImages, 'page-text': PageText, services: ServicesManager, projects: Projects, testimonials: Testimonials, gallery: Gallery, settings: SettingsPage, activity: Activity, help: Help };
   const Page = pages[view] || Dashboard;
 
   return (

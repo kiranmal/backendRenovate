@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
-import { useContent, useSiteImages, imageUrl } from '../hooks/useContent.js';
+import { useContent, useSiteImages, useTexts, imageUrl } from '../hooks/useContent.js';
 import './Residential.css';
 
 export default function Residential() {
   const { data: projects, loading } = useContent('projects');
   const si = useSiteImages();
+  const t = useTexts();
 
   useEffect(() => {
     const reveals = document.querySelectorAll('.res-reveal');
@@ -35,7 +36,7 @@ export default function Residential() {
         <div className="res-hero-inner res-reveal">
           <p className="eyebrow">Residential</p>
           <h1>Residential</h1>
-          <p>Thoughtfully crafted spaces, designed around the way you live.</p>
+          <p>{t('residential.hero.sub')}</p>
           <div className="actions">
             <a href="#res-work" className="btn-primary">View Our Work <span style={{ fontSize: '1.1rem' }}>→</span></a>
             <a href="/contact" className="btn-outline">Start a Project <span style={{ fontSize: '1.1rem' }}>→</span></a>

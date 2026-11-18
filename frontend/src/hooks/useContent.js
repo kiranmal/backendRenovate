@@ -79,23 +79,64 @@ export function useSiteImages() {
   return { get, list, loaded: data !== null, data };
 }
 
-/**
- * Fetch the settings object.
- */
-export function useSettings() {
+import { SETTINGS_DEFAULTS, TEXT_DEFAULTS } from '../siteText.js';
+
+/** Escape text before putting it into an HTML template string. */
+export function esc(v = '') {
+  return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+/** Escape + turn line breaks into <br> (for headlines). */
+export function escBr(v = '') {
+  return esc(v).replace(/\r?\n/g, '<br>');
+}
+/** Keep only digits and a leading + (for tel: and wa.me links). */
+export function digits(v = '') {
+  const d = String(v).replace(/[^\d+]/g, '');
+  return d;
+}
+
+// One shared fetch per page load for settings / texts / seo (many components use them).
+const shared = {};
+function loadShared(name) {
+  if (!shared[name]) {
+    shared[name] = fetch(`${API}/content/${name}`, { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((j) => (j.success ? j.data || {} : {}))
+      .catch(() => {});
+  }
+  return shared[name];
+}
+
+function useShared(name) {
   const [data, setData] = useState(null);
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`${API}/content/settings`);
-        const json = await res.json();
-        if (!cancelled && json.success) setData(json.data);
-      } catch {
-        /* settings are optional */
-      }
-    })();
+    loadShared(name).then((d) => { if (!cancelled) setData(d || {}); });
     return () => { cancelled = true; };
-  }, []);
+  }, [name]);
   return data;
+}
+
+/** Site settings merged over defaults — always returns a full object. */
+export function useSettings() {
+  const data = useShared('settings');
+  const merged = { ...SETTINGS_DEFAULTS };
+  if (data) Object.keys(SETTINGS_DEFAULTS).forEach((k) => { if (typeof data[k] === 'string' && data[k].trim()) merged[k] = data[k].trim(); });
+  merged.tel = digits(merged.phone);
+  return merged;
+}
+
+/** Page wording: t('home.hero.title') → admin override, else the built-in default. */
+export function useTexts() {
+  const data = useShared('texts');
+  return (key, fallback) => {
+    const v = data && data[key];
+    if (typeof v === 'string' && v.trim()) return v;
+    return fallback !== undefined ? fallback : TEXT_DEFAULTS[key] || '';
+  };
+}
+
+/** SEO map { home:{title,description,...}, about:{...} } */
+export function useSeo() {
+  return useShared('seo');
 }

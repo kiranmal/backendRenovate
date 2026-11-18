@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
-import { useSiteImages, imageUrl } from '../hooks/useContent.js';
+import { useSiteImages, imageUrl, useTexts, escBr } from '../hooks/useContent.js';
 import './Philosophy.css';
 
 export default function Philosophy() {
   const si = useSiteImages();
+  const t = useTexts();
   useEffect(() => {
     const reveals = document.querySelectorAll('.ph-reveal');
     const io = new IntersectionObserver((entries) => {
@@ -23,7 +24,7 @@ export default function Philosophy() {
       <div class="ph-hero-inner ph-reveal">
         <p class="eyebrow">Our Belief</p>
         <h1>Our Philosophy</h1>
-        <p>We believe that great spaces are not just built; they are considered. Every material, every joint, and every finish is a chance to create something lasting, meaningful, and quietly beautiful.</p>
+        <p>${escBr(t('philosophy.hero.sub'))}</p>
         <div class="actions">
           <a href="/contact" class="btn-primary">Discover Our Approach <span style="font-size:1.1rem;">→</span></a>
           <a href="/residential" class="btn-outline">Explore Our Work <span style="font-size:1.1rem;">→</span></a>

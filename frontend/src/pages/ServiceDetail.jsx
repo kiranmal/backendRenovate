@@ -7,8 +7,9 @@ import './ServiceDetail.css';
 
 export default function ServiceDetail() {
   const { slug } = useParams();
-  const service = getService(slug);
+  const staticService = getService(slug);
   const { data: projects, loading } = useContent('projects');
+  const { data: dbServices, loading: svcLoading } = useContent('services');
   const [managed, setManaged] = useState({});
 
   useEffect(() => {
@@ -33,7 +34,32 @@ export default function ServiceDetail() {
     return () => io.disconnect();
   }, [slug, projects, loading, managed]);
 
-  if (!service) return <Navigate to="/services" replace />;
+  // The database copy (edited in Admin → Services) wins over the built-in text.
+  const dbService = (dbServices || []).find((x) => x.slug === slug);
+  const service = staticService
+    ? {
+        ...staticService,
+        title: dbService?.title || staticService.title,
+        intro: dbService?.description || staticService.intro,
+        points: dbService?.points?.length ? dbService.points : staticService.points,
+      }
+    : dbService
+      ? {
+          slug: dbService.slug,
+          num: String(Math.max(1, (dbServices || []).indexOf(dbService) + 1)).padStart(2, '0'),
+          title: dbService.title,
+          intro: dbService.description || dbService.summary || '',
+          points: dbService.points || [],
+          categories: dbService.categories?.length ? dbService.categories : [dbService.title],
+          hero: dbService.image || '',
+          images: [],
+        }
+      : null;
+
+  if (!service) {
+    if (svcLoading) return <div className="sd-page" style={{ minHeight: '60vh' }} />;
+    return <Navigate to="/services" replace />;
+  }
 
   // Backend projects matching this service's categories
   const apiProjects = (projects || []).filter((p) => {
@@ -44,11 +70,13 @@ export default function ServiceDetail() {
   // Gallery = API project images + DB-stored service images + admin-added − admin-removed
   const m = managed[service.slug] || {};
   const baseImages = Array.isArray(m.images) ? m.images : service.images;
-  const hero = m.hero || service.hero;
+  const hero = m.hero || service.hero || dbService?.image || '';
   const apiImages = apiProjects.map((p) => p.image).filter(Boolean);
   const removed = new Set(m.removed || []);
   const gallery = [...new Set([...apiImages, ...baseImages, ...(m.added || [])])].filter((img) => !removed.has(img));
-  const next = SERVICES[(SERVICES.indexOf(service) + 1) % SERVICES.length];
+  const list = (dbServices && dbServices.length ? dbServices.filter((x) => x.slug) : SERVICES);
+  const idx = list.findIndex((x) => x.slug === service.slug);
+  const next = list[(idx + 1) % list.length] || SERVICES[0];
 
   return (
     <div className="sd-page">

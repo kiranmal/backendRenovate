@@ -12,6 +12,32 @@ import Contact from './pages/Contact.jsx';
 import PrivacyPolicy from './pages/PrivacyPolicy.jsx';
 import Terms from './pages/Terms.jsx';
 import Admin from './admin/Admin.jsx';
+import { useSeo } from './hooks/useContent.js';
+
+const SEO_KEYS = { '/': 'home', '/about': 'about', '/services': 'services', '/residential': 'residential', '/philosophy': 'philosophy', '/contact': 'contact' };
+
+function setMeta(attr, name, content) {
+  if (!content) return;
+  let el = document.head.querySelector(`meta[${attr}="${name}"]`);
+  if (!el) { el = document.createElement('meta'); el.setAttribute(attr, name); document.head.appendChild(el); }
+  el.setAttribute('content', content);
+}
+
+/** Applies the SEO settings saved in Admin → SEO to the page being viewed. */
+function SeoManager() {
+  const { pathname } = useLocation();
+  const seo = useSeo();
+  useEffect(() => {
+    if (!seo || pathname.startsWith('/admin')) return;
+    const cfg = seo[SEO_KEYS[pathname.replace(/\/+$/, '') || '/']];
+    if (!cfg) return;
+    if (cfg.title) { document.title = cfg.title; setMeta('property', 'og:title', cfg.title); setMeta('name', 'twitter:title', cfg.title); }
+    if (cfg.description) { setMeta('name', 'description', cfg.description); setMeta('property', 'og:description', cfg.description); setMeta('name', 'twitter:description', cfg.description); }
+    if (cfg.keywords) setMeta('name', 'keywords', cfg.keywords);
+    if (cfg.ogImage) { const img = cfg.ogImage.startsWith('http') ? cfg.ogImage : window.location.origin + cfg.ogImage; setMeta('property', 'og:image', img); setMeta('name', 'twitter:image', img); }
+  }, [seo, pathname]);
+  return null;
+}
 
 function Layout() {
   const location = useLocation();
@@ -36,6 +62,7 @@ function Layout() {
   }, [navigate]);
   return (
     <>
+      <SeoManager />
       {!isAdmin && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />

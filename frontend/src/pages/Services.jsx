@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useContent, useSiteImages, imageUrl } from '../hooks/useContent.js';
+import { useContent, useSiteImages, useTexts, imageUrl } from '../hooks/useContent.js';
 import { SERVICES as SERVICE_PAGES } from '../data/servicesData.js';
 import API from '../config.js';
 import './Services.css';
@@ -14,6 +14,7 @@ const slugFor = (title = '') => {
 export default function Services() {
   const { data: services, loading } = useContent('services');
   const si = useSiteImages();
+  const t = useTexts();
   const [svcImages, setSvcImages] = useState({});
   const pageRef = useRef(null);
 
@@ -58,7 +59,7 @@ export default function Services() {
         <div className="ser-hero-inner ser-reveal">
           <p className="eyebrow">Services</p>
           <h1>Services</h1>
-          <p>Craftsmanship, precision, and thoughtful solutions for every space.</p>
+          <p>{t('services.hero.sub')}</p>
           <a href="/contact" className="btn-primary">Start a Project <span style={{ fontSize: '1.1rem' }}>→</span></a>
         </div>
       </section>
@@ -69,8 +70,8 @@ export default function Services() {
             <img src={imageUrl(si.get('ser-intro', 0, '/images/IMG_0308.jpg'))} alt="Modern kitchen interior" loading="lazy" decoding="async" />
           </div>
           <div className="ser-reveal">
-            <h2>Built around quality.</h2>
-            <p>From detailed tile installation to complete home improvements, we bring careful planning, quality materials, and precise craftsmanship to every project.</p>
+            <h2>{t('services.intro.heading')}</h2>
+            <p>{t('services.intro.text')}</p>
           </div>
         </div>
       </section>
@@ -83,9 +84,9 @@ export default function Services() {
           </div>
           <div className="ser-services-grid">
             {activeServices.map((s, i) => {
-              const cardImage = s.image || (svcImages[slugFor(s.title)] || {}).hero;
+              const cardImage = s.image || (svcImages[s.slug || slugFor(s.title)] || {}).hero;
               return (
-              <a href={`/services/${slugFor(s.title)}`} className="ser-service ser-reveal" key={s.id || i} style={{ textDecoration: 'none', color: 'inherit', display: 'block', cursor: 'pointer' }}>
+              <a href={`/services/${s.slug || slugFor(s.title)}`} className="ser-service ser-reveal" key={s.id || i} style={{ textDecoration: 'none', color: 'inherit', display: 'block', cursor: 'pointer' }}>
                 {cardImage && (
                   <div style={{ marginBottom: '1rem', borderRadius: '8px', overflow: 'hidden' }}>
                     <img src={imageUrl(cardImage)} alt={s.title} loading="lazy" decoding="async" style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }} />

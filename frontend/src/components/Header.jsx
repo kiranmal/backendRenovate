@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { useSiteImages, imageUrl } from '../hooks/useContent.js';
+import { useSiteImages, imageUrl, useSettings, esc } from '../hooks/useContent.js';
 
 export default function Header() {
   const si = useSiteImages();
+  const cfg = useSettings();
   useEffect(() => {
     const header = document.getElementById('header');
     const toggle = document.getElementById('toggle');
@@ -34,7 +35,7 @@ export default function Header() {
   return (
     <div dangerouslySetInnerHTML={{ __html: `<header id="header">
   <div class="header-inner">
-    <a href="/" class="logo"><img src="${imageUrl(si.get('header-logo', 0, '/images/logo.png'))}" alt="Renovate Max2Max" class="logo-img"></a>
+    <a href="/" class="logo"><img src="${imageUrl(si.get('header-logo', 0, '/images/logo.png'))}" alt="${esc(cfg.siteName)}" class="logo-img"></a>
     <button class="menu-toggle" id="toggle" aria-label="Menu"><span></span><span></span><span></span></button>
     <nav class="menu" id="menu">
       <a href="/">Home</a>
@@ -43,7 +44,7 @@ export default function Header() {
       <a href="/services">Services</a>
       <a href="/philosophy">Philosophy</a>
       <a href="/contact">Contact</a>
-      <a href="tel:+14378698609" class="phone-link">+1 (437) 869-8609</a>
+      <a href="tel:${esc(cfg.tel)}" class="phone-link">${esc(cfg.phone)}</a>
       <a href="/contact" class="start-link">Start a Project</a>
     </nav>
   </div>
