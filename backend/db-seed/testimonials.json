@@ -1,0 +1,56 @@
+[
+  {
+    "id": "seed-t1",
+    "name": "Sarah Mitchell",
+    "designation": "Homeowner, Edmonton",
+    "image": "",
+    "text": "Renovate Max2Max transformed our bathroom completely. Gurdeep paid attention to every detail — the tile work is flawless and the finish is beautiful. Highly recommend.",
+    "rating": 5,
+    "published": true
+  },
+  {
+    "id": "seed-t2",
+    "name": "David Chen",
+    "designation": "Homeowner, Edmonton",
+    "image": "",
+    "text": "We hired Gurdeep for our kitchen backsplash and flooring. The quality of work and professionalism was outstanding. He showed up on time, kept the space clean, and delivered exactly what he promised.",
+    "rating": 5,
+    "published": true
+  },
+  {
+    "id": "seed-t3",
+    "name": "Jennifer Patel",
+    "designation": "Homeowner, Edmonton",
+    "image": "",
+    "text": "From the first conversation to the final walkthrough, the experience was excellent. Our custom shower looks better than we imagined. The mitered edges are a work of art.",
+    "rating": 5,
+    "published": true
+  },
+  {
+    "id": "seed-t4",
+    "name": "Michael Thompson",
+    "designation": "Business Owner, Edmonton",
+    "image": "",
+    "text": "Gurdeep and his team handled our commercial space renovation with precision. The tile installation was clean, level, and finished on schedule. Will definitely work with them again.",
+    "rating": 5,
+    "published": true
+  },
+  {
+    "id": "seed-t5",
+    "name": "Amanda Beaulieu",
+    "designation": "Homeowner, Edmonton",
+    "image": "",
+    "text": "The fireplace tile work exceeded our expectations. Gurdeep understood exactly what we wanted and executed it perfectly. True craftsmanship.",
+    "rating": 5,
+    "published": true
+  },
+  {
+    "id": "seed-t6",
+    "name": "Rajinder Singh",
+    "designation": "Homeowner, Edmonton",
+    "image": "",
+    "text": "Excellent work on our bathroom renovation. The waterproofing was done properly and the tile layout is perfect. Very satisfied with the quality and attention to detail.",
+    "rating": 5,
+    "published": true
+  }
+]

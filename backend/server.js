@@ -5,7 +5,7 @@ const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
-const os = require("os");
+const db = require("./db");
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "20mb" }));
@@ -17,29 +17,53 @@ app.use("/api", (req, res, next) => {
   next();
 });
 
-/* ---------- persistent storage ----------
-   Content lives in backend/data (JSON files) and backend/uploads (images).
-   Override with DATA_DIR / UPLOADS_DIR env vars if you want them elsewhere.
-   Only if those folders are read-only (e.g. Vercel serverless) do we fall
-   back to the OS temp folder — and then edits are NOT permanent. The admin
-   panel shows a red warning when that happens. */
-let DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
-let UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, "uploads");
-let STORAGE_PERSISTENT = true;
-function ensureDir(dir, fallbackName) {
+/* ---------- storage: MySQL (see db.js) ----------
+   All content and uploaded images are stored in MySQL (DB_HOST / DB_USER /
+   DB_PASSWORD / DB_NAME), so edits survive restarts and work on Vercel. */
+const STORAGE_PERSISTENT = true;
+
+// Uploaded images are served straight from MySQL. Names are unique, so they can be cached forever.
+// (/api/_uploads/... is the same route, used by the Vercel rewrite in vercel.json.)
+app.get(["/uploads/:name", "/api/_uploads/:name"], async (req, res) => {
   try {
-    fs.mkdirSync(dir, { recursive: true });
-    fs.accessSync(dir, fs.constants.W_OK);
-    return dir;
-  } catch {
-    STORAGE_PERSISTENT = false;
-    const tmp = path.join(os.tmpdir(), fallbackName);
-    fs.mkdirSync(tmp, { recursive: true });
-    return tmp;
+    await db.ready();
+    const row = await db.getUpload(path.basename(req.params.name));
+    if (!row) return res.status(404).end();
+    res.set("Content-Type", row.mime);
+    res.set("X-Content-Type-Options", "nosniff");
+    res.set("Cache-Control", "public, max-age=31536000, immutable");
+    return res.end(row.data);
+  } catch (e) {
+    console.error("upload fetch failed:", e && e.message);
+    return res.status(500).end();
   }
-}
-DATA_DIR = ensureDir(DATA_DIR, "renovate-data");
-UPLOADS_DIR = ensureDir(UPLOADS_DIR, "renovate-uploads");
+});
+
+// Before every API request: load the latest content from MySQL.
+// Before the response is sent: write whatever this request changed back to MySQL.
+app.use("/api", async (req, res, next) => {
+  try {
+    await db.ready();
+    // Public site reads may be up to 5 s old; admin calls and writes always read fresh data.
+    const publicRead = req.method === "GET" && req.path.startsWith("/content/");
+    await db.refresh(publicRead ? 5000 : 0);
+  } catch (e) {
+    console.error("database error:", e && e.message);
+    return res.status(503).json({ success: false, message: "Database unavailable. Check the DB_* settings." });
+  }
+  const send = res.json.bind(res);
+  res.json = (body) => {
+    db.flush()
+      .then(() => send(body))
+      .catch((e) => {
+        console.error("database save failed:", e && e.message);
+        res.status(500);
+        send({ success: false, message: "Could not save to the database." });
+      });
+    return res;
+  };
+  next();
+});
 
 /* ---------- admin auth ----------
    Password precedence: password changed from the admin panel (data/auth.json)
@@ -47,14 +71,10 @@ UPLOADS_DIR = ensureDir(UPLOADS_DIR, "renovate-uploads");
    current password, so changing the password signs out every old session. */
 const ENV_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 const SECRET = process.env.ADMIN_SECRET || "renovate-max2max-secret";
-const AUTH_FILE = path.join(DATA_DIR, "auth.json");
 
 function readAuth() {
-  try {
-    return JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"));
-  } catch {
-    return null;
-  }
+  const a = db.get("auth"); // password set from the admin panel (stored in MySQL)
+  return a && a.salt && a.hash ? a : null;
 }
 function hashPassword(pw, salt) {
   return crypto.scryptSync(String(pw), salt, 64).toString("hex");
@@ -77,20 +97,8 @@ function usingDefaultPassword() {
   return !readAuth() && ENV_PASSWORD === "admin123";
 }
 
-app.use("/uploads", express.static(UPLOADS_DIR));
-
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: UPLOADS_DIR,
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase();
-      const safe = path
-        .basename(file.originalname, ext)
-        .replace(/[^a-z0-9]+/gi, "-")
-        .toLowerCase();
-      cb(null, `${Date.now()}-${safe}${ext}`);
-    },
-  }),
+  storage: multer.memoryStorage(), // kept in memory, then saved to MySQL
   limits: { fileSize: 15 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ok = /^image\/(jpeg|png|webp|gif|avif)$/.test(file.mimetype);
@@ -98,29 +106,20 @@ const upload = multer({
   },
 });
 
-/* ---------- generic JSON collection helper ---------- */
-function fileFor(name) {
-  return path.join(DATA_DIR, `${name}.json`);
-}
+/* ---------- generic JSON collection helper (backed by MySQL via db.js) ---------- */
 function readCol(name) {
-  try {
-    return JSON.parse(fs.readFileSync(fileFor(name), "utf8"));
-  } catch {
-    return [];
-  }
+  const v = db.get(name);
+  return Array.isArray(v) ? v : [];
 }
 function writeCol(name, rows) {
-  fs.writeFileSync(fileFor(name), JSON.stringify(rows, null, 2));
+  db.set(name, rows);
 }
 function readObj(name) {
-  try {
-    return JSON.parse(fs.readFileSync(fileFor(name), "utf8"));
-  } catch {
-    return {};
-  }
+  const v = db.get(name);
+  return v && typeof v === "object" && !Array.isArray(v) ? v : {};
 }
 function writeObj(name, obj) {
-  fs.writeFileSync(fileFor(name), JSON.stringify(obj, null, 2));
+  db.set(name, obj);
 }
 function newId() {
   return Date.now().toString(36) + crypto.randomBytes(3).toString("hex");
@@ -142,7 +141,7 @@ function logActivity(action, meta = {}) {
 /* ---------- seed initial data on startup ---------- */
 function seed() {
   // Seed testimonials if file doesn't exist
-  if (!fs.existsSync(fileFor("testimonials"))) {
+  if (!db.has("testimonials")) {
     writeCol("testimonials", [
       {
         id: "seed-t1",
@@ -201,18 +200,18 @@ function seed() {
     ]);
   }
   // Seed services if file doesn't exist
-  if (!fs.existsSync(fileFor("services"))) writeCol("services", []);
-  if (!fs.existsSync(fileFor("texts"))) writeObj("texts", {});
-  if (!fs.existsSync(fileFor("projects"))) writeCol("projects", []);
-  if (!fs.existsSync(fileFor("quotes"))) writeCol("quotes", []);
-  if (!fs.existsSync(fileFor("activity"))) writeCol("activity", []);
-  if (!fs.existsSync(fileFor("settings"))) writeObj("settings", {});
-  if (!fs.existsSync(fileFor("seo"))) writeObj("seo", {});
-  if (!fs.existsSync(fileFor("image-overrides")))
+  if (!db.has("services")) writeCol("services", []);
+  if (!db.has("texts")) writeObj("texts", {});
+  if (!db.has("projects")) writeCol("projects", []);
+  if (!db.has("quotes")) writeCol("quotes", []);
+  if (!db.has("activity")) writeCol("activity", []);
+  if (!db.has("settings")) writeObj("settings", {});
+  if (!db.has("seo")) writeObj("seo", {});
+  if (!db.has("image-overrides"))
     writeObj("image-overrides", {});
-  if (!fs.existsSync(fileFor("image-extras"))) writeObj("image-extras", {});
-  if (!fs.existsSync(fileFor("service-images"))) writeObj("service-images", {});
-  if (!fs.existsSync(fileFor("site-images"))) writeObj("site-images", {});
+  if (!db.has("image-extras")) writeObj("image-extras", {});
+  if (!db.has("service-images")) writeObj("service-images", {});
+  if (!db.has("site-images")) writeObj("site-images", {});
 
   // First run only: copy the 9 built-in services into the database so every
   // service can be edited (title, text, bullet points, order, show/hide) from
@@ -286,7 +285,11 @@ function seed() {
     /* seed file missing — skip */
   }
 }
-seed();
+db.configure({
+  seed,
+  legacyDirs: [path.join(__dirname, "db-seed"), process.env.DATA_DIR || path.join(__dirname, "data")],
+  uploadsDir: process.env.UPLOADS_DIR || path.join(__dirname, "uploads"),
+});
 
 /* ---------- public ---------- */
 app.get("/api", (req, res) => res.json({ message: "Renovate Max2Max API" }));
@@ -383,10 +386,7 @@ app.post("/api/admin/change-password", requireAdmin, (req, res) => {
       message: "New password must be at least 8 characters",
     });
   const salt = crypto.randomBytes(16).toString("hex");
-  fs.writeFileSync(
-    AUTH_FILE,
-    JSON.stringify({ salt, hash: hashPassword(newPassword, salt), changedAt: new Date().toISOString() }, null, 2),
-  );
+  writeObj("auth", { salt, hash: hashPassword(newPassword, salt), changedAt: new Date().toISOString() });
   logActivity("password_changed");
   res.json({ success: true, token: currentToken() });
 });
@@ -397,6 +397,7 @@ app.get("/api/admin/system", requireAdmin, (req, res) => {
     success: true,
     system: {
       persistent: STORAGE_PERSISTENT,
+      storage: "mysql",
       defaultPassword: usingDefaultPassword(),
       serverless: !!process.env.VERCEL,
       time: new Date().toISOString(),
@@ -627,21 +628,14 @@ app.get("/api/admin/activity", requireAdmin, (req, res) => {
 });
 
 /* ---------- images / media ---------- */
-app.get("/api/admin/images", requireAdmin, (req, res) => {
+app.get("/api/admin/images", requireAdmin, async (req, res) => {
   try {
-    const files = fs
-      .readdirSync(UPLOADS_DIR)
-      .filter((f) => /\.(jpe?g|png|webp|gif|avif)$/i.test(f))
-      .map((f) => {
-        const s = fs.statSync(path.join(UPLOADS_DIR, f));
-        return {
-          name: f,
-          url: `/uploads/${f}`,
-          size: s.size,
-          uploadedAt: s.mtime,
-        };
-      })
-      .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+    const files = (await db.listUploads()).map((f) => ({
+      name: f.name,
+      url: `/uploads/${f.name}`,
+      size: f.size,
+      uploadedAt: f.uploadedAt,
+    }));
     res.json({ success: true, images: files });
   } catch {
     res.json({ success: true, images: [] });
@@ -649,33 +643,43 @@ app.get("/api/admin/images", requireAdmin, (req, res) => {
 });
 
 app.post("/api/admin/images", requireAdmin, (req, res) => {
-  upload.single("image")(req, res, (err) => {
+  upload.single("image")(req, res, async (err) => {
     if (err)
       return res.status(400).json({ success: false, message: err.message });
     if (!req.file)
       return res
         .status(400)
         .json({ success: false, message: "No file uploaded" });
-    logActivity("image_uploaded", { ref: req.file.filename });
-    res.json({
-      success: true,
-      image: {
-        name: req.file.filename,
-        url: `/uploads/${req.file.filename}`,
-        size: req.file.size,
-      },
-    });
+    try {
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      const safe = path
+        .basename(req.file.originalname, ext)
+        .replace(/[^a-z0-9]+/gi, "-")
+        .toLowerCase();
+      const name = `${Date.now()}-${safe}${ext}`;
+      await db.saveUpload({ name, mime: req.file.mimetype, buf: req.file.buffer });
+      logActivity("image_uploaded", { ref: name });
+      res.json({
+        success: true,
+        image: { name, url: `/uploads/${name}`, size: req.file.size },
+      });
+    } catch (e) {
+      console.error("upload save failed:", e && e.message);
+      res.status(500).json({ success: false, message: "Could not save the image to the database." });
+    }
   });
 });
 
-app.delete("/api/admin/images/:name", requireAdmin, (req, res) => {
-  const name = path.basename(req.params.name);
-  const file = path.join(UPLOADS_DIR, name);
-  if (!fs.existsSync(file))
-    return res.status(404).json({ success: false, message: "Not found" });
-  fs.unlinkSync(file);
-  logActivity("image_deleted", { ref: name });
-  res.json({ success: true });
+app.delete("/api/admin/images/:name", requireAdmin, async (req, res) => {
+  try {
+    const name = path.basename(req.params.name);
+    if (!(await db.deleteUpload(name)))
+      return res.status(404).json({ success: false, message: "Not found" });
+    logActivity("image_deleted", { ref: name });
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ success: false, message: "Could not delete the image." });
+  }
 });
 
 /* ---------- image overrides (admin write) ---------- */
@@ -737,8 +741,7 @@ const PORT = process.env.PORT || 5000;
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log("Server running on port " + PORT);
-    console.log("Data folder:   " + DATA_DIR + (STORAGE_PERSISTENT ? "" : "  (TEMPORARY — edits will be lost!)"));
-    console.log("Uploads folder: " + UPLOADS_DIR);
+    console.log("Storage: MySQL " + (process.env.DB_HOST || "(DB_HOST not set)") + " / " + (process.env.DB_NAME || "defaultdb"));
   });
 }
 module.exports = app;

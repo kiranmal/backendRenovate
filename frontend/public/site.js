@@ -15,8 +15,6 @@ document.addEventListener('DOMContentLoaded', function(){
     var h = location.hostname;
     if (h === 'localhost' || h === '127.0.0.1') {
       API_BASE = 'http://localhost:5000/api';
-    } else if (h.endsWith('vercel.app')) {
-      API_BASE = 'https://renovate-max2max-inc.onrender.com/api';
     } else {
       API_BASE = location.origin + '/api'; // self-hosted — same domain
     }

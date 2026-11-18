@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import API from '../config.js';
+import { shrinkImage } from './shrinkImage.js';
 import './admin.css';
 import { ToastProvider, ConfirmProvider, useToast, useConfirm, Modal, Badge, Field, Input, Textarea, Select, Skeleton, TableSkeleton, Empty, Pagination, ImagePicker, useApi, timeAgo, fmtSize } from './ui.jsx';
 import { IMAGE_USAGE, EXTERNAL_IMAGES, getUsage, isUsed } from './imageUsage.js';
@@ -758,7 +759,7 @@ function WebsiteImages() {
   const uploadFile = async (file) => {
     if (!file) return null;
     setUploading(true);
-    const fd = new FormData(); fd.append('image', file);
+    const fd = new FormData(); fd.append('image', await shrinkImage(file));
     try {
       const res = await fetch(`${window.__ADM_API__}/admin/images`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
       const data = await res.json();
@@ -1095,7 +1096,7 @@ function Media() {
     if (!files || !files.length) return;
     setUploading(true);
     for (const file of files) {
-      const fd = new FormData(); fd.append('image', file);
+      const fd = new FormData(); fd.append('image', await shrinkImage(file));
       await api('/admin/images', { method: 'POST', body: fd });
     }
     setUploading(false); toast('Upload complete', 'success'); load();
@@ -1427,7 +1428,7 @@ function ServiceImages() {
     const urls = [];
     for (const file of list) {
       try {
-        const fd = new FormData(); fd.append('image', file);
+        const fd = new FormData(); fd.append('image', await shrinkImage(file));
         const res = await fetch(`${window.__ADM_API__}/admin/images`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
         const data = await res.json();
         if (data.success) urls.push(`${API}${data.image.url}`);

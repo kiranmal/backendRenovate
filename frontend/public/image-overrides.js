@@ -8,7 +8,6 @@
   var API_BASE = (window.__ADM_API__ || (function () {
     var h = location.hostname;
     if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:5000/api';
-    if (h.endsWith('vercel.app')) return 'https://renovate-max2max-inc.onrender.com/api';
     return location.origin + '/api';
   })()).replace(/\/api$/, '');
   var overrides = {};
