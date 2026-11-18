@@ -20,6 +20,7 @@ const JSON_HEADERS = { "Content-Type": "application/json" };
 /* ============================================================
    SYSTEM BANNER — warns about things that stop edits going live
    ============================================================ */
+/*
 export function SystemBanner() {
   const api = useApi();
   const [sys, setSys] = useState(null);
@@ -36,9 +37,12 @@ export function SystemBanner() {
       text: "Your server is saving changes to a TEMPORARY folder. Edits will disappear when the server restarts. Host the backend on a VPS / always-on Node server (see DEPLOY.md) so changes are permanent.",
     });
   }
-  // if (sys.defaultPassword) {
-  //   warns.push({ tone: 'warn', text: 'You are still using the default password (admin123). Please change it in Settings → Account.' });
-  // }
+  if (sys.defaultPassword) {
+    warns.push({
+      tone: "warn",
+      text: "You are still using the default password (admin123). Please change it in Settings → Account.",
+    });
+  }
   if (!warns.length) return null;
   return (
     <div style={{ marginBottom: "1rem", display: "grid", gap: ".5rem" }}>
@@ -60,7 +64,7 @@ export function SystemBanner() {
     </div>
   );
 }
-
+*/
 /* ============================================================
    PAGE TEXT — edit headlines & paragraphs shown on the website
    ============================================================ */
