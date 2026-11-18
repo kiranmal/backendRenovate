@@ -20,7 +20,7 @@ const JSON_HEADERS = { "Content-Type": "application/json" };
 /* ============================================================
    SYSTEM BANNER — warns about things that stop edits going live
    ============================================================ */
-/*
+
 export function SystemBanner() {
   const api = useApi();
   const [sys, setSys] = useState(null);
@@ -64,7 +64,7 @@ export function SystemBanner() {
     </div>
   );
 }
-*/
+
 /* ============================================================
    PAGE TEXT — edit headlines & paragraphs shown on the website
    ============================================================ */
